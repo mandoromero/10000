@@ -1,5 +1,113 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
-
-body{
-    background: blue;
+body {
+    background-color: black;
 }
+
+#main-container {
+    background-color: #004C54;
+    border: 5px white solid;
+    margin: auto;
+    width: 600px;
+    padding: 50px;
+  }
+
+  #icon-container {
+    font-size: 40px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  #title {
+    text-align: center;
+  }
+  
+  #rules-scoring {
+    display: flex;
+  }
+  
+  h2 {
+    text-align: center;
+  }
+  
+  #rules {
+    width: 40%;
+  }
+  
+  #scoring {
+    width: 40%;
+    margin-left: 50px;
+  }
+  
+  #how-to-play,
+  #how-to-score {
+    display: none;
+  }
+  
+  #how-to-score {
+    padding: 10px;
+  }
+  
+  #how-to-play-btn,
+  #how-to-score-btn {
+    text-align: center;
+  }
+  
+  #score-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+
+  .toggle-btn {
+    background-color: yellow;
+    float: right;
+    border: none;
+    border-radius: 5%;
+    font-size: 16px;
+  }
+  
+  #player-score,
+  #bank,
+  #computer-score {
+    border: 2px white double;
+    height: 20px;
+    width: 95px;
+    margin-top: 0;
+  }
+  
+  #dice-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  .die-container {
+    margin-top: 30px;
+  }
+  
+  .die {
+    border: 3px solid white;
+    border-radius: 15%;
+    height: 35px;
+    width: 35px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    text-align: center;
+    padding-top: 3px;
+  }
+  
+  #controllers {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  #roll-btn {
+    margin-left: 50px;
+    margin-top: 30px;
+    width: 100px;
+    font-size: 24px;
+  }
+  
+  #bank-btn {
+    margin-right: 50px;
+    margin-top: 30px;
+    width: 100px;
+    font-size: 24px;
+  }
