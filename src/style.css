@@ -3,8 +3,9 @@ body {
 }
 
 #main-container {
+  color: #A8A9AD;
     background-color: #004C54;
-    border: 5px white solid;
+    border: 5px #A8A9AD solid;
     margin: auto;
     width: 600px;
     padding: 50px;
@@ -58,7 +59,8 @@ body {
   }
 
   .toggle-btn {
-    background-color: yellow;
+    color: #A8A9AD;
+    background-color: black;
     float: right;
     border: none;
     border-radius: 5%;
@@ -92,22 +94,24 @@ body {
     text-align: center;
     padding-top: 3px;
   }
+
+.hold-button {
+  background-color: black;
+  color: #A8A9AD;
+}
+
   
   #controllers {
     display: flex;
     justify-content: space-between;
   }
   
-  #roll-btn {
+  #roll-btn, #bank-btn {
+    color: #A8A9AD;
+    background-color: black;
     margin-left: 50px;
     margin-top: 30px;
     width: 100px;
     font-size: 24px;
   }
   
-  #bank-btn {
-    margin-right: 50px;
-    margin-top: 30px;
-    width: 100px;
-    font-size: 24px;
-  }

@@ -1,4 +1,4 @@
-import stylesheet from "./style.css";
+// import stylesheet from "./style.css";
 
 document.addEventListener("DOMContentLoaded", function() {
   const howToPlayBtn = document.getElementById("how-to-play-btn");
@@ -17,31 +17,35 @@ document.addEventListener("DOMContentLoaded", function() {
   const holdButtons = document.querySelectorAll(".hold-button");
   let diceState = Array(diceElements.length).fill(false);
   let heldDiceValues = [];
-
+  
   rollButton.addEventListener("click", function() {
     let rolledValues = [];
 
+    // Reset held dice values at the start of a new roll
+    heldDiceValues = [];
+
     // If all dice are held, unlock them but DO NOT reset the banked score
     if (diceState.every(state => state)) {
-      diceState.fill(false);
-      holdButtons.forEach(button => {
-        button.textContent = "Hold";
-        button.style.backgroundColor = "#007bff";
-      });
-      heldDiceValues = [];
+        diceState.fill(false);
+        holdButtons.forEach(button => {
+            button.textContent = "Hold";
+            button.style.backgroundColor = "#007bff";
+        });
     }
 
     // Roll dice that are not held
     diceElements.forEach((die, index) => {
-      if (!diceState[index]) {
-        const roll = Math.floor(Math.random() * 6) + 1;
-        die.textContent = roll;
-      }
-      rolledValues[index] = parseInt(die.textContent);
+        if (!diceState[index]) {
+            const roll = Math.floor(Math.random() * 6) + 1;
+            die.textContent = roll;
+        }
+        rolledValues[index] = parseInt(die.textContent);
     });
 
+    // Now call calculateScore() after rolling
     calculateScore();
-  });
+});
+
 
   howToPlayBtn.addEventListener("click", () => toggleDisplay(howToPlay));
   howToScoreBtn.addEventListener("click", () => toggleDisplay(howToScore));
@@ -104,56 +108,58 @@ document.addEventListener("DOMContentLoaded", function() {
   function calculateScore() {
     const counts = Array(6).fill(0);
     heldDiceValues.forEach(value => {
-      counts[value - 1]++;
+        counts[value - 1]++;
     });
 
     let newBankScore = 0;
     let anyScoringDice = false;
 
-    // Three-of-a-kind scoring
+    // Three-of-a-kind or more scoring
     for (let i = 0; i < counts.length; i++) {
-      if (counts[i] >= 3) {
-        let score = i === 0 ? 1000 : (i + 1) * 100;
-        newBankScore += score;
-        anyScoringDice = true;
-      }
+        if (counts[i] >= 3) {
+            let score = i === 0 ? 1000 : (i + 1) * 100;
+            newBankScore += score;
+            anyScoringDice = true;
+            counts[i] -= 3; // Remove counted dice
+        }
     }
 
-    // Single 1s and 5s
-    if (counts[0] < 3 && counts[0] > 0) {
-      newBankScore += counts[0] * 100;
-      anyScoringDice = true;
+    // Single 1s and 5s (only count remaining ones not used in three-of-a-kind)
+    if (counts[0] > 0) {
+        newBankScore += counts[0] * 100;
+        anyScoringDice = true;
     }
-    if (counts[4] < 3 && counts[4] > 0) {
-      newBankScore += counts[4] * 50;
-      anyScoringDice = true;
+    if (counts[4] > 0) {
+        newBankScore += counts[4] * 50;
+        anyScoringDice = true;
     }
 
     // Check for a straight (1-6)
     if (counts.every(count => count === 1)) {
-      newBankScore = 1500;
-      anyScoringDice = true;
+        newBankScore = 1500;
+        anyScoringDice = true;
     }
 
     // Check for three pairs
     const pairs = counts.filter(count => count === 2).length;
     if (pairs === 3) {
-      newBankScore = 750;
-      anyScoringDice = true;
+        newBankScore = 750;
+        anyScoringDice = true;
     }
 
-    // Only update bank score if dice were held
+    // Update the bank score only if dice were held
     if (heldDiceValues.length > 0) {
-      bankedScore = newBankScore;
+        bankedScore = newBankScore;
     }
 
     updateScoreDisplay();
 
-    // **🔹 FIX: Alert only when NO scoring dice exist in the rolled dice**
-    if (!anyScoringDice && heldDiceValues.length === 0) {
-      alert("No scoring dice! Turn is over.");
+    // ** Fix: Only trigger "No scoring dice" alert AFTER a roll and when no scoring dice exist **
+    if (!anyScoringDice && heldDiceValues.length === 0 && rolledDiceValues.length > 0) {
+        alert(`No scoring dice! Your roll: ${rolledDiceValues.join(", ")}`);
     }
-  }
+}
+
 
   function adjustBankScore(isHeld, dieValue) {
     let scoreChange = 0;
