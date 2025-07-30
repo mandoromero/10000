@@ -1,0 +1,14 @@
+.die-button-holder {
+    display: flex;
+    flex-direction: column;
+}
+
+.die {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+.die.rolling {
+    transform: rotate(360deg) scale(1.3);
+}

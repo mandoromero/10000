@@ -1,0 +1,13 @@
+.scoring-container {
+    background-color: rgb(75, 124, 15);
+    color:#fff2c2;
+    width: 50vw;
+    Margin: 0 auto;
+    padding: 100px 35px;
+
+}
+
+.scoring-title {
+    text-align: center;
+    margin-bottom: 50px;
+}

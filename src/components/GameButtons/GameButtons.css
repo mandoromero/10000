@@ -1,0 +1,22 @@
+.btns-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.roll {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-left: 200px;
+    padding: 10px 25px;
+    border-radius: 5px;
+    margin-top: 50px;
+}
+
+.bank {
+  font-size: 1.5rem;
+    font-weight: 600;
+    margin-right: 200px;
+    padding: 10px 25px;
+    border-radius: 5px;
+    margin-top: 50px;
+}

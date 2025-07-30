@@ -1,0 +1,37 @@
+.score-container {
+    display: flex;
+    width: 90%;
+    justify-content: space-between;
+    font-size: 2rem;
+    border: 5px #fff2c2 solid;
+    Margin: 10px auto;
+}
+
+.score-container > :first-child {
+    margin-left: 70px;
+}
+
+.score-container > :last-child {
+    margin-right: 70px;
+}
+
+.score {
+    padding: 10px;
+}
+
+.player-1-score, .bank-points, .player-2-score {
+   text-align: right;
+   font-size: 1.2rem;
+}
+
+.player {
+    padding:  10px;
+    border: 2px solid black;
+    margin:5px;
+}
+
+.player.active {
+    background-color: yellow;
+}
+
+
