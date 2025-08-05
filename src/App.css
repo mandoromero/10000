@@ -2,8 +2,30 @@
   width: 80vw;
   height: 100vh;
   margin: 0 auto;
+  padding-top: 40px;
   background-color: rgb(75, 124, 15);
   color:#fff2c2;
+}
+
+.rules-score {
+  display: flex;
+}
+.start, .how-to-play, .exit {
+  background-color: grey;
+  color: white;
+  border-radius: 5px;
+  padding: 5px 15px;
+}
+
+.exit-container {
+  margin: 15px;
+}
+
+.exit {
+    Padding: 5px 15px;
+    background-color: #7f7d9c;
+    color: #fff;
+    border-radius: 5px;
 }
 
 .title {

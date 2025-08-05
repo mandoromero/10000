@@ -1,13 +1,11 @@
-import diceImagesGroups from "./diceImageGroups";
+import diceImagesGroups from "../diceImageGroups";
 
 export default function DiceImage ({ value, sideIndex })  {
-    const image = diceImagesGroups[value - 1][sideIndex];
-    
     return (
         <img
-            src={image}
+            src={diceImagesGroups[value - 1][sideIndex]}
             alt={`Die showing ${value}`}
-            style={{ width: "60px" }}
+            style={{ width: "90px" }}
         />    
     );
 }

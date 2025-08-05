@@ -13,7 +13,7 @@ export default function ScoreKeeper() {
             </div>
             <div className="score">
                 <p className="player computer">Player 2</p>
-                <div className="player-2-score">0</div>
+                <div className="player-2-score">00000</div>
             </div>
         </div>
     )

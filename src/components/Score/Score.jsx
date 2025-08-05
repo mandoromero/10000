@@ -54,8 +54,6 @@ export default function Score({ onBack }) {
                 <ul>
                     <li>Three pair, exmaple a pair of 3s, a pair of 4s and a pair of 6s: 750p points</li>
                 </ul>
-            <p>You must hold at least one scoringd die or scoring combination after each roll. Your bank your score and roll as many times as you like.  If all six dice are scoring and held, player my pick up all 6 dice and their turn continues. If after a roll no scoring dice are shown, your round is over and you score 0 points</p>
-            <button className="btn btn-secondary mt-3" onClick={onBack}>Back</button>
         </div>
         
     )

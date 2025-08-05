@@ -1,14 +1,22 @@
-.die-button-holder {
+.die-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 6px;
 }
+
+.die {
+    display: flex;
+    justify-content: center;
+}
+
+.die-button-holder {
+    display: inline;
+}
+    
 
 .die {
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease;
-}
-
-.die.rolling {
-    transform: rotate(360deg) scale(1.3);
 }

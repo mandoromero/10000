@@ -1,79 +1,35 @@
+// diceSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialDice = Array.from({ length: 6 }, () => ({
-  value: 1,
-  sideIndex: 0,
-  held: false,
-}));
-
 const initialState = {
-  dice: initialDice,
-  firstPlayer: "player1", // or "player2"
-  rollTrigger: false,
-  gameStarted: false,
+  dice: Array(6).fill().map(() => ({
+    value: 1,
+    sideIndex: 0,
+    held: false,
+  })),
 };
 
 const diceSlice = createSlice({
   name: "dice",
   initialState,
   reducers: {
-    setDieValue: (state, action) => {
-      const { index, value, sideIndex } = action.payload;
-      if (state.dice[index]) {
-        state.dice[index].value = value;
-        state.dice[index].sideIndex = sideIndex;
-      }
+    rollDice: (state) => {
+      state.dice = state.dice.map(die =>
+        die.held
+          ? die
+          : {
+              value: Math.floor(Math.random() * 6) + 1, // 1–6
+              sideIndex: Math.floor(Math.random() * 4), // 0–3 variation
+              held: false,
+            }
+      );
     },
     toggleHold: (state, action) => {
-      const index = action.payload;
-      if (state.dice[index]) {
-        state.dice[index].held = !state.dice[index].held;
-      }
-    },
-    resetDice: (state) => {
-      state.dice = initialDice.map(() => ({
-        value: 1,
-        sideIndex: 0,
-        held: false,
-      }));
-    },
-    holdAllDice: (state) => {
-      state.dice.forEach((die) => {
-        die.held = true;
-      });
-    },
-    unholdAllDice: (state) => {
-      state.dice.forEach((die) => {
-        die.held = false;
-      });
-    },
-    switchPlayer: (state) => {
-      state.firstPlayer = state.firstPlayer === "player1" ? "player2" : "player1";
-    },
-
-    // ✅ Added reducers below
-    triggerRoll: (state) => {
-      state.rollTrigger = true;
-    },
-    resetRollTrigger: (state) => {
-      state.rollTrigger = false;
-    },
-    setGameStarted: (state, action) => {
-      state.gameStarted = action.payload;
+      const idx = action.payload;
+      state.dice[idx].held = !state.dice[idx].held;
     },
   },
 });
 
-export const {
-  setDieValue,
-  toggleHold,
-  resetDice,
-  holdAllDice,
-  unholdAllDice,
-  switchPlayer,
-  triggerRoll,
-  resetRollTrigger,
-  setGameStarted,
-} = diceSlice.actions;
-
+export const { rollDice, toggleHold } = diceSlice.actions;
 export default diceSlice.reducer;

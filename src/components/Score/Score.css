@@ -1,9 +1,11 @@
 .scoring-container {
-    background-color: rgb(75, 124, 15);
-    color:#fff2c2;
+    background-color: #D0f0c0;
+    color:#000;
     width: 50vw;
-    Margin: 0 auto;
+    Margin: 20px;
     padding: 100px 35px;
+    height: 500px;
+    overFlow-y: auto;
 
 }
 

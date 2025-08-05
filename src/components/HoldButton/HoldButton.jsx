@@ -1,13 +1,16 @@
+import { useDispatch } from "react-redux";
+import { toggleHold } from "../../redux/diceSlice.js";
 import "../HoldButton/HoldButton.css";
 
-export default function HoldButton({ isHeld, onToggle }) {
+export default function HoldButton({ index, held }) {
+    const dispatch = useDispatch();
+
     return (
         <button 
-            className="hold-button" 
-            onClick={onToggle}
-            style={{ backgroundColor: isHeld ? "#954535" : "#ddd", color: isHeld ? "white" : "black", cursor: "pointer" }}    
+            className={`btn btn-sm ${held ? "btn-warning" : "btn-secondary"}`} 
+            onClick={() => dispatch(toggleHold(index))}
         >
-            {isHeld ? "Held" : "Hold"}
+            {held ? "Held" : "Hold"}
         </button>
-    )
+    );
 }
