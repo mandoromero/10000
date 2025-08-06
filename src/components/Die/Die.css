@@ -2,21 +2,31 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.3s ease;
     gap: 6px;
 }
 
 .die {
     display: flex;
     justify-content: center;
-}
-
-.die-button-holder {
-    display: inline;
-}
-    
+}   
 
 .die {
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease;
+}
+
+.die.rolling {
+    animation: rollAnimatoins 0.3s linear infinate;
+}
+
+@keyframes rollAnimation {
+    0% { transform: rotate(0deg); }
+    25% {transform: rotate(90deg); }
+    50% {transform: rotate(180deg); }
+    75% {transform: rotate(270deg); }
+    100% {transform: rotate(360deg); }
+
+
 }

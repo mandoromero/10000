@@ -1,3 +1,7 @@
+.dice-board {
+    background-color: green;
+}
+
 .dice-row {
    display: flex;
    justify-content: space-between;

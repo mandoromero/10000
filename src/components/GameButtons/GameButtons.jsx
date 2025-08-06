@@ -3,20 +3,19 @@ import{ rollDice } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
 
-function GameButtons() {
+export default function GameButtons() {
     const dispatch = useDispatch();
 
     return (
         <div className="btns-container">
             <button 
-                className="roll"
+                className="roll-btn"
                 onClick={() => dispatch(rollDice())}
             >
                 Roll
             </button>
-            <button className="bank">Bank</button>
+            <button className="bank-btn">Bank</button>
         </div>
     );
 }
 
-export default GameButtons;
