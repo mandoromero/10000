@@ -7,7 +7,7 @@ export default function HoldButton({ index, held }) {
 
     return (
         <button 
-            className={`btn btn-sm ${held ? "btn-warning" : "btn-secondary"}`} 
+            className={`btn btn-lg ${held ? "btn-warning" : "btn-secondary"}`} 
             onClick={() => dispatch(toggleHold(index))}
         >
             {held ? "Held" : "Hold"}

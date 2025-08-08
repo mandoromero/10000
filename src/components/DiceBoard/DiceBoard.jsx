@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import Die from "../Die/Die.jsx";
 import "../DiceBoard/DiceBoard.css";
 
-export default function DiceBoard({ rolling }) {
+export default function DiceBoard({ isRolling }) {
   const dice = useSelector((state) => state.dice.dice);
 
   return (
@@ -14,7 +14,7 @@ export default function DiceBoard({ rolling }) {
           value={die.value}
           sideIndex={die.sideIndex}
           held={die.held}
-          rolling={rolling}
+          isRolling={isRolling}
         />
       ))}
     </div>

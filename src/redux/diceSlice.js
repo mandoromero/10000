@@ -1,5 +1,5 @@
 // diceSlice.js
-import { createSlice } from "@reduxjs/toolkit";
+import { createSerializableStateInvariantMiddleware, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   dice: Array(6).fill().map(() => ({
@@ -7,6 +7,9 @@ const initialState = {
     sideIndex: 0,
     held: false,
   })),
+  gameStarted: false,
+  startingPlayer: null,
+  startRolling: false,
 };
 
 const diceSlice = createSlice({
@@ -28,8 +31,31 @@ const diceSlice = createSlice({
       const idx = action.payload;
       state.dice[idx].held = !state.dice[idx].held;
     },
+    startRoll: (state) => {
+      const rollDie = () => Math.floor(Math.random()* 6) + 1;
+      const rollSide = () => Math.floor(Math.random() * 4);
+
+      const firstValue = rollDie();
+      const lastValue = rollDie();
+
+      state.dice[0] = {value: firstValue, sideIndex: rollSide(),held: false};
+      state.dice[state.dice.length - 1]= { value: lastValue, sideIndex: rollSide(), held: false};
+
+      if (firstValue > lastValue) {
+        state.startingPlayer = "player1";
+        state.gameStarted = true;
+        state.startRolling = false;
+      } else if (lastValue > firstValue) {
+        state.startingPlayer = "player2";
+        state.gameStarted = true;
+        state.startRolling = false;
+      } else {
+        state.startingPlayer = null;
+        state.startRolling = false;
+      }
+    },
   },
 });
 
-export const { rollDice, toggleHold } = diceSlice.actions;
+export const { rollDice, toggleHold, startRoll } = diceSlice.actions;
 export default diceSlice.reducer;

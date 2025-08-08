@@ -1,16 +1,16 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import{ rollDice } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
 
-export default function GameButtons() {
-    const dispatch = useDispatch();
-
+export default function GameButtons({ onStart, onRoll, rollDisabled  }) {
+    const gameStarted = useSelector(state => state.dice.gamestarted);
     return (
         <div className="btns-container">
-            <button 
+            <button
+                onClick={onRoll} 
                 className="roll-btn"
-                onClick={() => dispatch(rollDice())}
+                disabled={rollDisabled}
             >
                 Roll
             </button>
