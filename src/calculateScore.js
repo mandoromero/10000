@@ -54,3 +54,5 @@ export function calculateScore(dice) {
 
   return score;
 }
+
+export default calculateScore;

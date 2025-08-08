@@ -1,61 +1,49 @@
-// diceSlice.js
-import { createSerializableStateInvariantMiddleware, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import calculateScore from "../calculateScore.js";
 
 const initialState = {
-  dice: Array(6).fill().map(() => ({
-    value: 1,
-    sideIndex: 0,
-    held: false,
-  })),
+  dice: Array(6).fill().map(() => ({ value: 1, sideIndex: 0, held: false })),
   gameStarted: false,
   startingPlayer: null,
-  startRolling: false,
+  bankPoints: 0,
 };
 
 const diceSlice = createSlice({
   name: "dice",
   initialState,
   reducers: {
-    rollDice: (state) => {
-      state.dice = state.dice.map(die =>
+    setDice(state, action) {
+      state.dice = action.payload;
+      // No score calculation here — score depends on held dice
+    },
+    rollDice(state) {
+      // Roll only dice that are NOT held
+      state.dice = state.dice.map((die) =>
         die.held
           ? die
           : {
-              value: Math.floor(Math.random() * 6) + 1, // 1–6
-              sideIndex: Math.floor(Math.random() * 4), // 0–3 variation
+              value: Math.floor(Math.random() * 6) + 1,
+              sideIndex: Math.floor(Math.random() * 4),
               held: false,
             }
       );
     },
-    toggleHold: (state, action) => {
+    toggleHold(state, action) {
       const idx = action.payload;
       state.dice[idx].held = !state.dice[idx].held;
+
+      // Calculate score ONLY from held dice after toggling
+      const heldDice = state.dice.filter((d) => d.held);
+      state.bankPoints = calculateScore(heldDice);
     },
-    startRoll: (state) => {
-      const rollDie = () => Math.floor(Math.random()* 6) + 1;
-      const rollSide = () => Math.floor(Math.random() * 4);
-
-      const firstValue = rollDie();
-      const lastValue = rollDie();
-
-      state.dice[0] = {value: firstValue, sideIndex: rollSide(),held: false};
-      state.dice[state.dice.length - 1]= { value: lastValue, sideIndex: rollSide(), held: false};
-
-      if (firstValue > lastValue) {
-        state.startingPlayer = "player1";
-        state.gameStarted = true;
-        state.startRolling = false;
-      } else if (lastValue > firstValue) {
-        state.startingPlayer = "player2";
-        state.gameStarted = true;
-        state.startRolling = false;
-      } else {
-        state.startingPlayer = null;
-        state.startRolling = false;
-      }
+    resetBankPoints(state) {
+      state.bankPoints = 0;
+    },
+    startRoll(state) {
+      // Your existing startRoll logic here...
     },
   },
 });
 
-export const { rollDice, toggleHold, startRoll } = diceSlice.actions;
+export const { setDice, rollDice, toggleHold, resetBankPoints, startRoll } = diceSlice.actions;
 export default diceSlice.reducer;

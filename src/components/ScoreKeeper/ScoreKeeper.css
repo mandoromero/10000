@@ -5,6 +5,8 @@
     font-size: 2rem;
     border: 5px #fff2c2 solid;
     Margin: 10px auto;
+    height: 200px;
+    padding-top: 25px;
 }
 
 .score-container > :first-child {
@@ -26,7 +28,7 @@
 
 .player {
     padding:  10px;
-    border: 2px solid black;
+    border: 2px solid #fff2c2;
     margin:5px;
 }
 

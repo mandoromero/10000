@@ -8,20 +8,9 @@
     width: 100%;
 }
 
-.roll-btn {
+.roll-btn, .bank-btn, .end-btn {
     font-size: 1.5rem;
     font-weight: 600;
-    margin-left: 200px;
-    padding: 10px 25px;
-    border-radius: 5px;
-    margin-top: 50px;
-    background-color: #fff2c2;
-}
-
-.bank-btn {
-  font-size: 1.5rem;
-    font-weight: 600;
-    margin-right: 200px;
     padding: 10px 25px;
     border-radius: 5px;
     margin-top: 50px;

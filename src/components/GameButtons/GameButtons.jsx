@@ -15,6 +15,7 @@ export default function GameButtons({ onStart, onRoll, rollDisabled  }) {
                 Roll
             </button>
             <button className="bank-btn">Bank</button>
+            <button className="end-btn">End Turn</button>
         </div>
     );
 }

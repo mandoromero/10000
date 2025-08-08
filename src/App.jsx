@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Rules from "../src/components/Rules/Rules.jsx";
 import Score from "../src/components/Score/Score.jsx";
 import GameBoard from "../src/components/GameBoard/GameBoard.jsx"
+import Header from "./components/Header/Header.jsx";  
 
 function App() {
   const [showRules, setShowRules] = useState(false);
@@ -28,6 +29,7 @@ function App() {
           </div>
         </div>
       )}
+      <Header />
       <GameBoard />
     </div>
   );

@@ -1,0 +1,15 @@
+.header {
+    background-color: green;
+    color: #fff2c2;
+    width: 80%;
+    margin: 0 auto -20px auto;;
+}
+h1 {
+    font-size: 3rem;
+}
+
+p {
+    display: flex;
+    justify-content: center;
+    font-size: 2rem;
+}

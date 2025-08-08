@@ -35,5 +35,4 @@ const sortedDiceImagesGroups = diceImagesGroups.map(group =>
 
 console.log("✅ Loaded dice images:", sortedDiceImagesGroups);
 
-// ✅ EXPORT FIXED NAME
 export default sortedDiceImagesGroups;
