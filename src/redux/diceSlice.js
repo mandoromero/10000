@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import calculateScore from "../calculateScore.js";
+import calculateScore  from "../calculateScore.js";
 
 const initialState = {
   dice: Array(6).fill().map(() => ({ value: 1, sideIndex: 0, held: false })),
@@ -29,21 +29,36 @@ const diceSlice = createSlice({
       );
     },
     toggleHold(state, action) {
-      const idx = action.payload;
-      state.dice[idx].held = !state.dice[idx].held;
-
-      // Calculate score ONLY from held dice after toggling
-      const heldDice = state.dice.filter((d) => d.held);
-      state.bankPoints = calculateScore(heldDice);
+      if(state.gameStarted == true) {
+        const idx = action.payload;
+        state.dice[idx].held = !state.dice[idx].held;
+        const heldDiceValues = state.dice
+        .filter((d) => d.held)
+        .map((d) => d.value);
+        state.bankPoints = calculateScore(heldDiceValues);
+      }
     },
     resetBankPoints(state) {
       state.bankPoints = 0;
     },
-    startRoll(state) {
-      // Your existing startRoll logic here...
+    setStartingPlayer (state, action) {
+      state.startingPlayer = action.payload;   
     },
-  },
+    startRoll(state) {
+      state.gameStarted = true;
+      state.startingPlayer = null; // Reset starting player for new game
+      state.bankPoints = 0; // Reset bank points at the start of a new roll
+      state.dice = state.dice.map(die => ({ ...die, held: false, value: 1, sideIndex: 0}));
+    },
+  }
 });
 
-export const { setDice, rollDice, toggleHold, resetBankPoints, startRoll } = diceSlice.actions;
+export const { 
+  setDice, 
+  rollDice, 
+  toggleHold, 
+  resetBankPoints, 
+  setStartingPlayer, 
+  startRoll 
+} = diceSlice.actions;
 export default diceSlice.reducer;

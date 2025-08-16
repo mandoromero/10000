@@ -1,5 +1,5 @@
 
-export function calculateScore(dice) {
+function calculateScore(dice) {
   if (!Array.isArray(dice) || dice.length === 0) return 0;
 
   // Sort dice for easier pattern detection
@@ -30,7 +30,6 @@ export function calculateScore(dice) {
   let score = 0;
 
   // Check six, five, four, three of a kind with doubling for extras above three
-
   for (const [numStr, count] of Object.entries(counts)) {
     const num = Number(numStr);
 
@@ -51,7 +50,6 @@ export function calculateScore(dice) {
       else if (num === 5) score += count * 50;
     }
   }
-
   return score;
 }
 
