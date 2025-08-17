@@ -8,7 +8,7 @@
     width: 100%;
 }
 
-.roll-btn, .bank-btn, .end-btn {
+.roll-btn, .bank-btn {
     font-size: 1.5rem;
     font-weight: 600;
     padding: 10px 25px;

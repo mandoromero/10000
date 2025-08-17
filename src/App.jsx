@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -9,6 +10,7 @@ import GameBoard from "../src/components/GameBoard/GameBoard.jsx"
 import Header from "./components/Header/Header.jsx";  
 
 function App() {
+  const dispatch = useDispatch();
   const [showRules, setShowRules] = useState(false);
 
   return (

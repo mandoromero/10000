@@ -1,15 +1,9 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Die from "../Die/Die.jsx";
 import "../DiceBoard/DiceBoard.css";
 
-/**
- * Displays the full set of dice on the board.
- * Pulls dice state from Redux and renders one <Die> per item.
- *
- * @param {boolean} isRolling - Whether all dice are currently rolling.
- */
 export default function DiceBoard({ isRolling }) {
-  // Get dice array from Redux store
+  const dispatch = useDispatch();
   const dice = useSelector((state) => state.dice.dice);
   
   return (

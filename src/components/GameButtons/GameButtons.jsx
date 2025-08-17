@@ -24,9 +24,6 @@ export default function GameButtons({ onStart, onRoll, rollDisabled }) {
 
       {/* Bank points button */}
       <button className="bank-btn">Bank</button>
-
-      {/* End current player's turn */}
-      <button className="end-btn">End Turn</button>
     </div>
   );
 }

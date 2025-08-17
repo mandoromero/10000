@@ -1,26 +1,20 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { rollDice } from "../../redux/diceSlice.js";
+import { rollDice, dismissSmokedOverlay, endTurn } from "../../redux/diceSlice.js";
 import ScoreKeeper from "../ScoreKeeper/ScoreKeeper.jsx";
 import GameButtons from "../GameButtons/GameButtons.jsx";
 import DiceBoard from "../DiceBoard/DiceBoard.jsx";
 import "../GameBoard/GameBoard.css";
+import SmokedModal from "../SmokedModal/SmokedModal.jsx";
 
-/**
- * Main game board containing:
- * - Score display
- * - Dice area
- * - Game control buttons
- */
 export default function GameBoard() {
   const dispatch = useDispatch();
   const [rolling, setRolling] = useState(false); // Tracks rolling animation
   const gameStarted = useSelector((state) => state.dice.gameStarted);
   const startingPlayer = useSelector((state) => state.dice.startingPlayer);
+  const smoked = useSelector((state) => state.dice.smoked);
 
-  /**
-   * Rolls the dice with a delay to match animation time.
-   */
+
   const handleRoll = () => {
     setRolling(true);
 
@@ -29,6 +23,11 @@ export default function GameBoard() {
       setRolling(false);
     }, 1000); // Matches CSS roll animation duration
   };
+
+  const handleSmokedClose = () => {
+    dispatch(dismissSmokedOverlay());
+    dispatch(endTurn());
+  }
 
   return (
     <div className="game-board">
@@ -42,6 +41,10 @@ export default function GameBoard() {
       <GameButtons
         onRoll={handleRoll}
         rollDisabled={!gameStarted || rolling}
+      />
+      <SmokedModal
+        show={smoked}
+        onClose={handleSmokedClose}
       />
     </div>
   );
