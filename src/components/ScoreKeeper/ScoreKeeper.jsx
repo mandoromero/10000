@@ -2,10 +2,11 @@ import { useSelector } from "react-redux";
 import formatScore from "../../formatScore.js";
 import "./ScoreKeeper.css";
 
-export default function ScoreKeeper({ activePlayer }) {
+export default function ScoreKeeper() {
     const player1Score = useSelector((state) => state.dice.player1Score);
     const bankPoints =  useSelector((state) => state.dice.bankPoints);
     const player2Score = useSelector((state) => state.dice.player2Score);
+    const activePlayer = useSelector((state) => state.dice.activePlayer);
 
     return (
         <div className="score-container">

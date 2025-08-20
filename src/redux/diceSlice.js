@@ -68,11 +68,11 @@ const diceSlice = createSlice({
 
       if (state.activePlayer === "player1") {
         state.player1Score += state.bankPoints;
-        state.activePlayer = "player2";
       } else {
         state.player2Score += state.bankPoints;
-        state.activePlayer = "player1";
       }
+      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+
 
       // reset state for next turn
       state.bankPoints = 0;
@@ -117,6 +117,7 @@ const diceSlice = createSlice({
 
     dismissSmokedOverlay(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+
 
       state.bankPoints = 0;
       state.currentRollScore = 0;

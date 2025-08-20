@@ -31,13 +31,8 @@ export default function GameBoard() {
 
   return (
     <div className="game-board">
-      {/* Player scores */}
-      <ScoreKeeper activePlayer={startingPlayer} />
-
-      {/* Dice area */}
+      <ScoreKeeper activePlayer={useSelector(state => state.dice.activePlayer)} />
       <DiceBoard isRolling={rolling} />
-
-      {/* Control buttons */}
       <GameButtons
         onRoll={handleRoll}
         rollDisabled={!gameStarted || rolling}
