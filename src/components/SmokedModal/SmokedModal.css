@@ -12,10 +12,24 @@
 }
 
 .smoked-modal {
-    background: #fff;
+    background-color: white;
+    color: black;
     padding: 20px 30px;
     border-radius: 12px;
     text-align: center;
     box-shadow: 0 40px 10px rgba(0,0,0,0.5);
+
+    .smoked-btn {
+        background-color: gray;
+        font-size: 1.3rem;
+        color: black;
+        padding: 5px 15px;
+        border-radius: 10px;
+    }
+
+    .smoked-btn:hover {
+        background-color: #cbcbcb;
+        color: #FFF;
+    }
 
 }

@@ -9,6 +9,10 @@ const initialState = {
   currentRollScore: 0,
   currentRoll: [],
   smoked: false,
+
+  player1Score: 0,
+  player2Score: 0,
+  activePlayer: "player1",
 };
 
 const diceSlice = createSlice({
@@ -18,61 +22,74 @@ const diceSlice = createSlice({
     setDice(state, action) {
       state.dice = action.payload;
     },
+
     rollDice(state) {
+      const allHeld = state.dice.every(die => die.held); // 🔑 Hot Dice check
       const freshDice = [];
+
       state.dice = state.dice.map((die) => {
-        if (die.held) return die;
-        const newDie = {
-          value: Math.floor(Math.random() * 6) + 1,
-          sideIndex: Math.floor(Math.random() * 4),
-          held: false,
-        };
-        freshDice.push(newDie.value);
-        return newDie;
+        if (allHeld || !die.held) {
+          const newDie = {
+            value: Math.floor(Math.random() * 6) + 1,
+            sideIndex: Math.floor(Math.random() * 4),
+            held: false, // reset hold if Hot Dice
+          };
+          freshDice.push(newDie.value);
+          return newDie;
+        }
+        return die;
       });
-    
-      state.currentRoll = freshDice; // track this roll
+
+      state.currentRoll = freshDice;
       const rollScore = calculateScore(freshDice);
       state.currentRollScore = rollScore;
 
       if (rollScore === 0) {
-        // Player smoked — end the turn
-        state.smoked = true;
+        state.smoked = true; // turn ends if no score
       }
     },
+
     toggleHold(state, action) {
       if (!state.gameStarted) return;
 
       const idx = action.payload;
-      state.dice[idx].held = !state.dice[idx].held;
       const die = state.dice[idx];
+      if (!die) return;
 
-      // Only toggle if it's part of the current roll
-      if (state.currentRoll.includes(die.value)) {
-        die.held = !die.held;
+      die.held = !die.held;
 
-        // Get all dice being held from THIS roll
-        const newlyHeld = state.dice
-          .filter((d, i) => d.held && state.currentRoll.includes(d.value))
-          .map(d => d.value);
-
-        // Score only the newly held dice from this roll
-        state.bankPoints += calculateScore(newlyHeld);
-
-        // Remove scored dice from currentRoll to prevent double-scoring
-        state.currentRoll = state.currentRoll.filter(val => !newlyHeld.includes(val));
-      }
-    },
-    updateBankFromHeld(state) {
+      // ✅ Recalculate score of *all held dice*
       const heldValues = state.dice.filter(d => d.held).map(d => d.value);
-      state.vankPoints = calculateScore(heldValues)
+      state.bankPoints = calculateScore(heldValues);
     },
+
+    bankPointsAndEndTurn(state) {
+      if (state.bankPoints === 0) return;
+
+      if (state.activePlayer === "player1") {
+        state.player1Score += state.bankPoints;
+        state.activePlayer = "player2";
+      } else {
+        state.player2Score += state.bankPoints;
+        state.activePlayer = "player1";
+      }
+
+      // reset state for next turn
+      state.bankPoints = 0;
+      state.currentRollScore = 0;
+      state.currentRoll = [];
+      state.dice = state.dice.map((d) => ({ ...d, held: false }));
+      state.smoked = false;
+    },
+
     resetBankPoints(state) {
       state.bankPoints = 0;
     },
+
     setStartingPlayer(state, action) {
       state.startingPlayer = action.payload;
     },
+
     startRoll(state) {
       state.gameStarted = true;
       state.startingPlayer = null;
@@ -83,24 +100,31 @@ const diceSlice = createSlice({
         ...die,
         held: false,
         value: 1,
-        sideIndex: 0
+        sideIndex: 0,
       }));
     },
+
     endTurn(state) {
+      // ✅ fixed ternary operator
+      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+
+      state.bankPoints = 0; 
+      state.currentRollScore = 0;
+      state.currentRoll = [];
+      state.dice = state.dice.map((d) => ({ ...d, held: false }));
+      state.smoked = false;
+    },
+
+    dismissSmokedOverlay(state) {
+      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+
       state.bankPoints = 0;
       state.currentRollScore = 0;
       state.currentRoll = [];
       state.dice = state.dice.map(d => ({ ...d, held: false }));
       state.smoked = false;
     },
-    dismissSmokedOverlay(state) {
-      state.bankPoints = 0;
-      state.currentRollScore = 0;
-      state.dice = state.dice.map;(d => ({ ...d, held: false }));
-      state.smoked = false;
-      state.currentRoll = [];
-    },
-  }
+  },
 });
 
 export const { 
@@ -110,6 +134,7 @@ export const {
   resetBankPoints, 
   setStartingPlayer, 
   startRoll,
+  bankPointsAndEndTurn,
   endTurn,
   dismissSmokedOverlay,
 } = diceSlice.actions;

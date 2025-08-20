@@ -1,19 +1,16 @@
 import { useDispatch } from "react-redux";
-import { toggleHold } from "../../redux/diceSlice.js";
+import { toggleHold } from "../../redux/diceSlice";
 import "../HoldButton/HoldButton.css";
 
-/**
- * Button to toggle whether a die is held.
- * @param {number} index - Index of the die in the dice array.
- * @param {boolean} held - Current hold state of the die.
- */
-export default function HoldButton({ index, held }) {
+export default function HoldButton({ idx, held }) {
   const dispatch = useDispatch();
 
   return (
     <button
-      className={`btn btn-lg ${held ? "btn-warning" : "btn-secondary"}`}
-      onClick={() => dispatch(toggleHold(index))}
+      className={`${held ? "held-btn" : "hold-btn"}`}
+      onClick={() => {
+        dispatch(toggleHold(idx));
+      }}
     >
       {held ? "Held" : "Hold"}
     </button>

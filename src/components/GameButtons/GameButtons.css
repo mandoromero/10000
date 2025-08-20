@@ -15,4 +15,9 @@
     border-radius: 5px;
     margin-top: 50px;
     background-color: #fff2c2;
+    color: #000;
+}
+
+.roll-btn:hover, .bank-btn:hover {
+    background-color: #ffca05;
 }

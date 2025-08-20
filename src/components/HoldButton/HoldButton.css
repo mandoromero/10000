@@ -1,3 +1,18 @@
-.btn {
-    margin-top: 30px;
+.held-btn {
+    background-color: #daa520;
+}
+
+.hold-btn {
+    background-color: grey;
+}
+
+.hold-btn:hover {
+        background-color: #cbcbcb;
+        color: #b38d00;
+    }
+
+.held-btn, .hold-btn {
+    font-size: 1.3rem;
+    padding: 5px 15px;
+    margin-top: 20px;
 }
