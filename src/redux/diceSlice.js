@@ -39,14 +39,6 @@ const diceSlice = createSlice({
         }
         return die;
       });
-
-      state.currentRoll = freshDice;
-      const rollScore = calculateScore(freshDice);
-      state.currentRollScore = rollScore;
-
-      if (rollScore === 0) {
-        state.smoked = true; // turn ends if no score
-      }
     },
 
     toggleHold(state, action) {
@@ -58,29 +50,29 @@ const diceSlice = createSlice({
 
       die.held = !die.held;
 
-      // ✅ Recalculate score of *all held dice*
-      const heldValues = state.dice.filter(d => d.held).map(d => d.value);
-      state.bankPoints = calculateScore(heldValues);
-    },
+      const heldDiceValues = state.dice.filter(d => d.held).map(d => d.value);
 
-    bankPointsAndEndTurn(state) {
-      if (state.bankPoints === 0) return;
+    state.bankPoints = calculateScore(heldDiceValues);
+  },
 
-      if (state.activePlayer === "player1") {
-        state.player1Score += state.bankPoints;
-      } else {
-        state.player2Score += state.bankPoints;
-      }
-      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+  bankPointsAndEndTurn(state) {
+    if (state.bankPoints === 0) return;
+
+    if (state.activePlayer === "player1") {
+      state.player1Score += state.bankPoints;
+    } else {
+      state.player2Score += state.bankPoints;
+    }
+    state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
 
 
-      // reset state for next turn
-      state.bankPoints = 0;
-      state.currentRollScore = 0;
-      state.currentRoll = [];
-      state.dice = state.dice.map((d) => ({ ...d, held: false }));
-      state.smoked = false;
-    },
+    // reset state for next turn
+    state.bankPoints = 0;
+    state.currentRollScore = 0;
+    state.currentRoll = [];
+    state.dice = state.dice.map((d) => ({ ...d, held: false }));
+    state.smoked = false;
+  },
 
     resetBankPoints(state) {
       state.bankPoints = 0;
