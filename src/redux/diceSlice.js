@@ -81,7 +81,7 @@ const diceSlice = createSlice({
           held: false,
           locked: false,
           rollId: state.currentRollId,
-        };
+      };
         freshDice.push(newDie.value);
         return newDie;
       });
