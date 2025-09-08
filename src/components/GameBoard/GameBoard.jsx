@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { rollDice, dismissSmokedOverlay, endTurn } from "../../redux/diceSlice.js";
 import ScoreKeeper from "../ScoreKeeper/ScoreKeeper.jsx";
@@ -24,10 +24,15 @@ export default function GameBoard() {
     }, 1000); // Matches CSS roll animation duration
   };
 
-  const handleSmokedClose = () => {
-    dispatch(dismissSmokedOverlay());
-    dispatch(endTurn());
+useEffect(() => {
+  if (smoked) {
+    const timeout = setTimeout(() => {
+      dispatch(dismissSmokedOverlay());
+    }, 2000)
+    return () => clearTimeout(timeout)
   }
+}, [smoked, dispatch])
+
 
   return (
     <div className="game-board">
@@ -39,7 +44,6 @@ export default function GameBoard() {
       />
       <SmokedModal
         show={smoked}
-        onClose={handleSmokedClose}
       />
     </div>
   );

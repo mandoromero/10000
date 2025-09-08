@@ -124,8 +124,19 @@ const diceSlice = createSlice({
 
       const turnTotal = state.bankLocked + calculateScore(heldCurrent);
 
-      if (state.activePlayer === "player1") state.player1Score += turnTotal;
-      else state.player2Score += turnTotal;
+      if (state.activePlayer === "player1") {
+        if (state.player1Score + turnTotal >= 1000) {
+          state.player1Score += turnTotal;
+        }
+      } else {
+          if (state.player2Score + turnTotal >= 1000) {
+          state.player2Score += turnTotal;
+      }}
+
+
+
+      // if (state.activePlayer === "player1") state.player1Score += turnTotal;
+      // else state.player2Score += turnTotal;
 
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
 
