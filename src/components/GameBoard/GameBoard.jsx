@@ -6,6 +6,7 @@ import GameButtons from "../GameButtons/GameButtons.jsx";
 import DiceBoard from "../DiceBoard/DiceBoard.jsx";
 import "../GameBoard/GameBoard.css";
 import SmokedModal from "../SmokedModal/SmokedModal.jsx";
+import Winning from "../Winning/Winning.jsx";
 
 export default function GameBoard() {
   const dispatch = useDispatch();
@@ -37,6 +38,7 @@ useEffect(() => {
   return (
     <div className="game-board">
       <ScoreKeeper activePlayer={useSelector(state => state.dice.activePlayer)} />
+      <Winning />
       <DiceBoard isRolling={rolling} />
       <GameButtons
         onRoll={handleRoll}

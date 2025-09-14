@@ -24,6 +24,20 @@ const initialState = {
   player1Name: "Player 1",
   player2Name: "Player 2",
   currentRollId: null,
+  winner: null,
+  finalRound: false,
+  targetScore: null,
+};
+
+// helper to clear roll/turn state
+const resetTurnState = (state) => {
+  state.bankLocked = 0;
+  state.bankPoints = 0;
+  state.currentRollScore = 0;
+  state.currentRoll = [];
+  state.currentRollId = null;
+  state.smoked = false;
+  state.dice = state.dice.map(makeDie);
 };
 
 const diceSlice = createSlice({
@@ -35,9 +49,11 @@ const diceSlice = createSlice({
       if (player === "player1") state.player1Name = name || "Player 1";
       if (player === "player2") state.player2Name = name || "Player 2";
     },
+
     setStartingPlayer(state, action) {
       state.startingPlayer = action.payload;
     },
+
     setDice(state, action) {
       state.dice = action.payload;
     },
@@ -81,7 +97,7 @@ const diceSlice = createSlice({
           held: false,
           locked: false,
           rollId: state.currentRollId,
-      };
+        };
         freshDice.push(newDie.value);
         return newDie;
       });
@@ -108,13 +124,10 @@ const diceSlice = createSlice({
 
       state.bankPoints = state.bankLocked + calculateScore(heldDiceValues);
     },
+
     endTurn(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
-      state.bankPoints = 0; 
-      state.currentRollScore = 0;
-      state.currentRoll = [];
-      state.dice = state.dice.map(d => ({ ...d, held: false }));
-      state.smoked = false;
+      resetTurnState(state);
     },
 
     bankPointsAndEndTurn(state) {
@@ -125,52 +138,66 @@ const diceSlice = createSlice({
       const turnTotal = state.bankLocked + calculateScore(heldCurrent);
 
       if (state.activePlayer === "player1") {
-        if (state.player1Score + turnTotal >= 1000) {
-          state.player1Score += turnTotal;
+        state.player1Score += turnTotal;
+      } else {
+        state.player2Score += turnTotal;
+      }
+
+      // check for entering final round
+      if (!state.finalRound) {
+        const currentScore =
+          state.activePlayer === "player1" ? state.player1Score : state.player2Score;
+
+        if (currentScore >= 10000) {
+          state.finalRound = true;
+          state.targetScore = currentScore;
+
+          // give last turn to the other player
+          state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+          resetTurnState(state);
+          return;
         }
       } else {
-          if (state.player2Score + turnTotal >= 1000) {
-          state.player2Score += turnTotal;
-      }}
+        // Final round resolution
+        const p1 = state.player1Score;
+        const p2 = state.player2Score;
 
+        if (p1 > p2 && p1 >= state.targetScore) {
+          state.winner = state.player1Name;
+        } else if (p2 > p1 && p2 >= state.targetScore) {
+          state.winner = state.player2Name;
+        } else if (p1 === p2) {
+          state.winner = "It's a tie!";
+        } else {
+          // If the last player failed to beat target
+          state.winner =
+            state.activePlayer === "player1" ? state.player2Name : state.player1Name;
+        }
 
+        state.gameStarted = false; // stop game
+        return;
+      }
 
-      // if (state.activePlayer === "player1") state.player1Score += turnTotal;
-      // else state.player2Score += turnTotal;
-
+      // Normal turn switching
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
-
-      state.bankLocked = 0;
-      state.bankPoints = 0;
-      state.currentRollScore = 0;
-      state.currentRoll = [];
-      state.currentRollId = null;
-      state.smoked = false;
-      state.dice = state.dice.map(makeDie);
+      resetTurnState(state);
     },
 
     dismissSmokedOverlay(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
-      state.bankLocked = 0;
-      state.bankPoints = 0;
-      state.currentRollScore = 0;
-      state.currentRoll = [];
-      state.currentRollId = null;
-      state.smoked = false;
-      state.dice = state.dice.map(makeDie);
+      resetTurnState(state);
     },
 
     startRoll(state) {
       state.gameStarted = true;
       state.startingPlayer = null;
-      state.bankLocked = 0;
-      state.bankPoints = 0;
-      state.currentRoll = [];
-      state.currentRollScore = 0;
-      state.currentRollId = null;
-      state.smoked = false;
-      state.dice = state.dice.map(makeDie);
+      resetTurnState(state);
     },
+
+    resetGame: () => ({
+      ...initialState,
+      dice: Array(6).fill(null).map(makeDie), // ensure fresh dice
+    }),
   },
 });
 
@@ -184,6 +211,7 @@ export const {
   bankPointsAndEndTurn,
   dismissSmokedOverlay,
   startRoll,
+  resetGame,
 } = diceSlice.actions;
 
 export default diceSlice.reducer;
