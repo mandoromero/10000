@@ -5,6 +5,9 @@ import "../GameButtons/GameButtons.css";
 export default function GameButtons({ rollDisabled }) {
   const dispatch = useDispatch();
   const gameStarted = useSelector(state => state.dice.gameStarted);
+  const dice = useSelector(state => state.dice.dice);
+
+  const allDiceUsed = dice.every(d => d.held || d.locked);
 
   return (
     <div className="btns-container">
@@ -21,7 +24,7 @@ export default function GameButtons({ rollDisabled }) {
       <button 
         onClick={() => dispatch(bankPointsAndEndTurn())}
         className="bank-btn"
-        disabled={!gameStarted}
+        disabled={!gameStarted || allDiceUsed}
       >
         Bank</button>
     </div>

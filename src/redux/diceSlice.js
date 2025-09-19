@@ -131,57 +131,66 @@ const diceSlice = createSlice({
     },
 
     bankPointsAndEndTurn(state) {
+      // Get all held dice for this roll
       const heldCurrent = state.dice
-        .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
-        .map(d => d.value);
+      .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
+      .map(d => d.value);
 
+      // Calculate the total points from this turn
       const turnTotal = state.bankLocked + calculateScore(heldCurrent);
 
+      // Add to the active player's score
       if (state.activePlayer === "player1") {
         state.player1Score += turnTotal;
       } else {
         state.player2Score += turnTotal;
       }
 
-      // check for entering final round
+      // --- Check if we need to enter the final round ---
       if (!state.finalRound) {
         const currentScore =
-          state.activePlayer === "player1" ? state.player1Score : state.player2Score;
+        state.activePlayer === "player1" ? state.player1Score : state.player2Score;
 
         if (currentScore >= 10000) {
+          // Enter final round
           state.finalRound = true;
           state.targetScore = currentScore;
+          state.finalRoundFirstPlayer = state.activePlayer; // Track who triggered final round
 
-          // give last turn to the other player
-          state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+          // Give the other player one last turn
+          state.activePlayer =
+          state.activePlayer === "player1" ? "player2" : "player1";
           resetTurnState(state);
           return;
         }
       } else {
-        // Final round resolution
+        // --- Final round resolution ---
         const p1 = state.player1Score;
         const p2 = state.player2Score;
 
-        if (p1 > p2 && p1 >= state.targetScore) {
-          state.winner = state.player1Name;
-        } else if (p2 > p1 && p2 >= state.targetScore) {
-          state.winner = state.player2Name;
-        } else if (p1 === p2) {
-          state.winner = "It's a tie!";
+        const firstPlayer = state.finalRoundFirstPlayer;
+        const lastPlayer = firstPlayer === "player1" ? "player2" : "player1";
+
+        // Decide winner
+        if ((firstPlayer === "player1" && p1 > p2) || (firstPlayer === "player2" && p2 > p1)) {
+          state.winner = firstPlayer === "player1" ? state.player1Name : state.player2Name;
+        } else if ((lastPlayer === "player1" && p1 > p2) || (lastPlayer === "player2" && p2 > p1)) {
+          state.winner = lastPlayer === "player1" ? state.player1Name : state.player2Name;
         } else {
-          // If the last player failed to beat target
-          state.winner =
-            state.activePlayer === "player1" ? state.player2Name : state.player1Name;
+          state.winner = "It's a tie!";
         }
 
-        state.gameStarted = false; // stop game
-        return;
+        state.gameStarted = false; // Stop the game immediately
+        return; // ✅ Prevent further turn switching
       }
 
-      // Normal turn switching
-      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+      // --- Normal turn switching for regular gameplay ---
+      state.activePlayer =
+        state.activePlayer === "player1" ? "player2" : "player1";
       resetTurnState(state);
     },
+
+
 
     dismissSmokedOverlay(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
