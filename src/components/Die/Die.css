@@ -10,6 +10,7 @@
     justify-content: center;
     flex-direction: column;
     transition: transform 0.3s ease;
+    margin-top: 190px;
 }
 
 /* Match React's "die-rolling" class */

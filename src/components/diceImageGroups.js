@@ -1,9 +1,5 @@
-// src/utils/diceImageGroups.js
-
-// Import all dice images from the folder (loaded immediately)
 const diceModules = import.meta.glob("../../assets/10000_imgs/*.png", { eager: true });
 
-// Create an array with 6 groups (for dice values 1–6)
 const diceImagesGroups = Array.from({ length: 6 }, () => []);
 
 // Organize images into groups based on file name pattern: Die<value>_<variant>.png

@@ -1,14 +1,15 @@
-.dice-board {
-    background-color: green;
-    display: flex;
-    justify-content: space-around;
-    Margin: 100px 80px;
-}
+dice-board { 
+  background-color: green; 
+  display: flex; 
+  justify-content: 
+  space-around; 
+  height: 400px; 
+} 
 
 .dice-row {
-   display: flex;
-   justify-content: space-between;
-    width: 80%;
-    margin: 100px auto;
-
+   display: flex; 
+   justify-content: 
+   space-between; 
+   width: 80%; 
+   margin: 100px auto; 
 }
