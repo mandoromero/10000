@@ -7,16 +7,26 @@ export default function GameButtons({ rollDisabled }) {
   const dispatch = useDispatch();
   const gameStarted = useSelector(state => state.dice.gameStarted);
   const dice = useSelector(state => state.dice.dice);
+  const activePlayer =  useSelector(state => state.dice.activePlayer);
+  const bankPoints = useSelector(state => state.dice.bankPoints);
+  const player1Open = useSelector(state => state.dice.player1Open);
+  const player2Open = useSelector(state => state.dice.Player2Open);
 
   const [isRolling, setIsRolling] = useState(false);
 
   const allDiceUsed = dice.every(d => d.held || d.locked);
-
+  
   const handleRoll = () => {
     setIsRolling(true);
     setTimeout(() => setIsRolling(false), 550);
     dispatch(rollDice());
   }
+
+  const bankDisabled = 
+    !gameStarted || 
+    allDiceUsed ||
+    (activePlayer === "player1" && !player1Open && bankPoints < 1000)  ||
+    (activePlayer === "player2" && !player2Open && bankPoints < 1000); 
 
   return (
     <div className="btns-container">
@@ -34,7 +44,8 @@ export default function GameButtons({ rollDisabled }) {
         className="bank-btn"
         disabled={!gameStarted || allDiceUsed}
       >
-        Bank</button>
+        Bank
+      </button>
     </div>
   );
 }

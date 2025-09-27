@@ -27,9 +27,10 @@ const initialState = {
   winner: null,
   finalRound: false,
   targetScore: null,
+  player1Open: false,
+  player2Open: false,
 };
 
-// helper to clear roll/turn state
 const resetTurnState = (state) => {
   state.bankLocked = 0;
   state.bankPoints = 0;
@@ -136,15 +137,28 @@ const diceSlice = createSlice({
       .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
       .map(d => d.value);
 
-      // Calculate the total points from this turn
       const turnTotal = state.bankLocked + calculateScore(heldCurrent);
 
       // Add to the active player's score
-      if (state.activePlayer === "player1") {
-        state.player1Score += turnTotal;
-      } else {
-        state.player2Score += turnTotal;
+      if (state.activePlayer === "player1" && !state.player1Open && turnTotal < 1000) {
+        return;
       }
+      if (state.activePlayer === "player2" && !state.player2Open && turnTotal < 1000) {
+        return;
+      }
+        if (state.activePlayer === "player1" && !state.player1Open && turnTotal >= 1000) {
+          state.player1Open = true;
+        }
+
+        if (state.activePlayer === "player2" && !state.player2Open && turnTotal >= 1000) {
+          state.player2Open = true;
+        }
+
+        if (state.activePlayer === "player1") {
+          state.player1Score += turnTotal;
+        } else {
+          state.player2Score += turnTotal;
+        }
 
       // --- Check if we need to enter the final round ---
       if (!state.finalRound) {
@@ -189,8 +203,6 @@ const diceSlice = createSlice({
         state.activePlayer === "player1" ? "player2" : "player1";
       resetTurnState(state);
     },
-
-
 
     dismissSmokedOverlay(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
