@@ -132,6 +132,10 @@ const diceSlice = createSlice({
     },
 
     bankPointsAndEndTurn(state) {
+        //state check for final round
+        if (state.finalRound && state.activePlayer === state.finalRoundFirstPlayer && !state.winner) 
+          {return;}
+
       // Get all held dice for this roll
       const heldCurrent = state.dice
       .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
@@ -165,7 +169,7 @@ const diceSlice = createSlice({
         const currentScore =
         state.activePlayer === "player1" ? state.player1Score : state.player2Score;
 
-        if (currentScore >= 10000) {
+        if (currentScore >= 1000) {
           // Enter final round
           state.finalRound = true;
           state.targetScore = currentScore;
@@ -198,6 +202,10 @@ const diceSlice = createSlice({
         return; // ✅ Prevent further turn switching
       }
 
+      // State check for endgame
+      if (state.winner) return;
+
+      
       // --- Normal turn switching for regular gameplay ---
       state.activePlayer =
         state.activePlayer === "player1" ? "player2" : "player1";
