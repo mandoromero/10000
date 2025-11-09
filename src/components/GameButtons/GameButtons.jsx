@@ -10,7 +10,7 @@ export default function GameButtons({ rollDisabled }) {
   const activePlayer =  useSelector(state => state.dice.activePlayer);
   const bankPoints = useSelector(state => state.dice.bankPoints);
   const player1Open = useSelector(state => state.dice.player1Open);
-  const player2Open = useSelector(state => state.dice.Player2Open);
+  const player2Open = useSelector(state => state.dice.player2Open);
 
   const [isRolling, setIsRolling] = useState(false);
 
@@ -42,7 +42,7 @@ export default function GameButtons({ rollDisabled }) {
       <button 
         onClick={() => dispatch(bankPointsAndEndTurn())}
         className="bank-btn"
-        disabled={!gameStarted || allDiceUsed}
+        disabled={!gameStarted || allDiceUsed || rollDisabled}
       >
         Bank
       </button>
