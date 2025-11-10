@@ -2,3 +2,8 @@ game-board {
     background-color: green;
     padding: 30px;
 }
+
+board.containter.disabled {
+    opacity: 0.4;
+    filter: grayscale(0.6);
+}

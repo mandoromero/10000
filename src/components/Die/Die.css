@@ -1,27 +1,34 @@
 .die-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .die {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    transition: transform 0.3s ease;
-    margin-top: 190px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  margin-top: 190px;
+  transition: transform 0.3s ease;
 }
 
-/* Match React's "die-rolling" class */
-.die-rolling .die {
-    animation: rollAnimation 0.3s linear 10 infinite;
+.die:not(.rolling) {
+  animation: bounceIn 0.3s ease-out;
 }
 
-@keyframes rollAnimation {
-    0%   { transform: rotate(0deg); }
-    25%  { transform: rotate(90deg); }
-    50%  { transform: rotate(180deg); }
-    75%  { transform: rotate(270deg); }
-    100% { transform: rotate(360deg); }
+@keyframes bounceIn {
+  0%   { transform: scale(1.2); }
+  50%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Animate the die when rolling */
+.rolling .die {
+  animation: spinDice 1s 10;
+}
+
+@keyframes spinDice {
+  0%   { transform: rotate3d(1, 1, 0, 0deg); }
+  100% { transform: rotate3d(1, 1, 0, 360deg); }
 }

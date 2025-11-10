@@ -5,7 +5,7 @@
     padding: 0;
     padding-bottom: 100px;
     width: 100%;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .roll-btn, .bank-btn {
@@ -13,7 +13,7 @@
     font-weight: 600;
     padding: 10px 25px;
     border-radius: 5px;
-    margin-top: 50px;
+    margin-top: 10px;
     background-color: #fff2c2;
     color: #000;
 }

@@ -6,43 +6,51 @@ import "./Die.css";
 export default function Die({ idx, value, sideIndex, held, isRolling }) {
   const [rollingValue, setRollingValue] = useState(value);
   const [rollingSide, setRollingSide] = useState(sideIndex);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   useEffect(() => {
     if (!isRolling) {
+      // When rolling stops, show final face and stop animation
       setRollingValue(value);
       setRollingSide(sideIndex);
+      setIsSpinning(false);
       return;
     }
 
-    let rollCount = 0;
-    const maxRolls = 10;
-    const delay = Math.random() * 200; // random stagger 0–200ms
-    let interval;
+    // Random stagger so all dice start at different times
+    const delay = Math.random() * 300; // between 0–300ms
 
     const startRolling = () => {
-      interval = setInterval(() => {
-        rollCount += 1;
+      setIsSpinning(true);
+      let rollCount = 0;
+      const maxRolls = 10;
+      const interval = setInterval(() => {
+        rollCount++;
         setRollingValue(Math.floor(Math.random() * 6) + 1);
         setRollingSide(Math.floor(Math.random() * 4));
 
         if (rollCount >= maxRolls) {
           clearInterval(interval);
-          setRollingValue(value);      // final Redux value
-          setRollingSide(sideIndex);
+          setTimeout(() => {
+            // Settle on the real rolled value from Redux
+            setRollingValue(value);
+            setRollingSide(sideIndex);
+            setIsSpinning(false);
+          }, 150);
         }
-      }, 50);
+      }, 100);
     };
 
     const timeout = setTimeout(startRolling, delay);
 
     return () => {
       clearTimeout(timeout);
-      clearInterval(interval);
+      setIsSpinning(false);
     };
   }, [isRolling, value, sideIndex]);
 
   return (
-    <div className={`die-container ${isRolling ? "die-rolling" : ""}`}>
+    <div className={`die-container ${isSpinning ? "rolling" : ""}`}>
       <div className="die">
         <DiceImage value={rollingValue} sideIndex={rollingSide} />
       </div>

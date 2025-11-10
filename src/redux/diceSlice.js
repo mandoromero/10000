@@ -132,75 +132,67 @@ const diceSlice = createSlice({
     },
 
     bankPointsAndEndTurn(state) {
-      // Prevent the final-round player from banking twice
+      // Prevent the final-round starter from banking again
       if (state.finalRound && state.activePlayer === state.finalRoundFirstPlayer && !state.winner) {
+      return;
+    }
+
+    // Get all held dice values from this roll
+    const heldCurrent = state.dice
+    .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
+    .map(d => d.value);
+
+    const turnTotal = state.bankLocked + calculateScore(heldCurrent);
+
+    // --- Handle "open" rule (need 1000 points first to start scoring) ---
+    if (state.activePlayer === "player1" && !state.player1Open && turnTotal < 1000) return;
+    if (state.activePlayer === "player2" && !state.player2Open && turnTotal < 1000) return;
+
+    if (state.activePlayer === "player1" && !state.player1Open && turnTotal >= 1000)
+      state.player1Open = true;
+    if (state.activePlayer === "player2" && !state.player2Open && turnTotal >= 1000)
+      state.player2Open = true;
+
+    // --- Apply points ---
+    if (state.activePlayer === "player1") {
+      state.player1Score += turnTotal;
+    } else {
+      state.player2Score += turnTotal;
+    }
+
+    // --- Handle entering final round ---
+    if (!state.finalRound) {
+      const currentScore =
+        state.activePlayer === "player1" ? state.player1Score : state.player2Score;
+
+      if (currentScore >= 10000) {
+        // Enter final round
+        state.finalRound = true;
+        state.targetScore = currentScore;
+        state.finalRoundFirstPlayer = state.activePlayer;
+
+        // Give the other player one last turn
+        state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
+        resetTurnState(state);
         return;
       }
+    }
 
-      // Get all held dice for this roll
-      const heldCurrent = state.dice
-        .filter(d => d.held && !d.locked && d.rollId === state.currentRollId)
-        .map(d => d.value);
+    // --- Final round logic ---
+    if (state.finalRound) {
+      const p1 = state.player1Score;
+      const p2 = state.player2Score;
+      const firstPlayer = state.finalRoundFirstPlayer;
+      const lastPlayer = firstPlayer === "player1" ? "player2" : "player1";
 
-      const turnTotal = state.bankLocked + calculateScore(heldCurrent);
-
-      // --- Handle "opening" rule (must reach 1000 in one turn before scoring counts) ---
-      if (state.activePlayer === "player1" && !state.player1Open && turnTotal < 1000) {
-        return;
-      }
-      if (state.activePlayer === "player2" && !state.player2Open && turnTotal < 1000) {
-        return;
-      }
-      if (state.activePlayer === "player1" && !state.player1Open && turnTotal >= 1000) {
-        state.player1Open = true;
-      }
-      if (state.activePlayer === "player2" && !state.player2Open && turnTotal >= 1000) {
-        state.player2Open = true;
-      }
-
-      // --- Apply points ---
-      if (state.activePlayer === "player1") {
-        state.player1Score += turnTotal;
-      } else {
-        state.player2Score += turnTotal;
-      }
-
-      // --- Handle entering final round ---
-      if (!state.finalRound) {
-        const currentScore =
-          state.activePlayer === "player1" ? state.player1Score : state.player2Score;
-
-        if (currentScore >= 10000) {
-          // Enter final round
-          state.finalRound = true;
-          state.targetScore = currentScore;
-          state.finalRoundFirstPlayer = state.activePlayer;
-
-          // Give the other player one last turn
-          state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
-          resetTurnState(state);
-          return;
-        }
-      }
-
-      // --- If already in final round ---
-      if (state.finalRound) {
-        const p1 = state.player1Score;
-        const p2 = state.player2Score;
-
-        const firstPlayer = state.finalRoundFirstPlayer;
-        const lastPlayer = firstPlayer === "player1" ? "player2" : "player1";
-
-        // If the last player smokes (scores 0 this turn)
-        if (turnTotal === 0 && state.activePlayer === lastPlayer) {
+      // --- If the last player just finished their turn ---
+      if (state.activePlayer === lastPlayer) {
+        // If they smoked (0 points this turn)
+        if (turnTotal === 0) {
           state.winner =
             firstPlayer === "player1" ? state.player1Name : state.player2Name;
-          state.gameStarted = false;
-          return;
-        }
-
-        // If the last player finishes normally, compare scores
-        if (state.activePlayer === lastPlayer) {
+        } else {
+          // Compare final scores
           if (p1 > p2) {
             state.winner = state.player1Name;
           } else if (p2 > p1) {
@@ -208,24 +200,24 @@ const diceSlice = createSlice({
           } else {
             state.winner = "It's a tie!";
           }
-          state.gameStarted = false;
-          return;
         }
 
-        // Otherwise, switch to the last player for their final turn
-        state.activePlayer = lastPlayer;
-        resetTurnState(state);
+        // Stop the game immediately
+        state.gameStarted = false;
         return;
       }
 
-      // --- Regular gameplay turn switching ---
-      if (state.winner) return;
-
-      state.activePlayer =
-        state.activePlayer === "player1" ? "player2" : "player1";
+      // Otherwise, it was the first player who triggered 10k — switch to last player's final turn
+      state.activePlayer = lastPlayer;
       resetTurnState(state);
-    },
+      return;
+    }
 
+    // --- Regular gameplay (non-final round) ---
+    state.activePlayer =
+      state.activePlayer === "player1" ? "player2" : "player1";
+    resetTurnState(state);
+  },
 
     dismissSmokedOverlay(state) {
       state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
