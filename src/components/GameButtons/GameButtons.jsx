@@ -11,12 +11,14 @@ export default function GameButtons({ rollDisabled }) {
   const bankPoints = useSelector(state => state.dice.bankPoints);
   const player1Open = useSelector(state => state.dice.player1Open);
   const player2Open = useSelector(state => state.dice.player2Open);
+  const winner = useSelector((state) => state.dice.winner);
 
   const [isRolling, setIsRolling] = useState(false);
 
   const allDiceUsed = dice.every(d => d.held || d.locked);
   
   const handleRoll = () => {
+    if (winner) return;
     setIsRolling(true);
     setTimeout(() => setIsRolling(false), 550);
     dispatch(rollDice());

@@ -10,20 +10,19 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
 
   useEffect(() => {
     if (!isRolling) {
-      // When rolling stops, show final face and stop animation
       setRollingValue(value);
       setRollingSide(sideIndex);
       setIsSpinning(false);
       return;
     }
 
-    // Random stagger so all dice start at different times
-    const delay = Math.random() * 300; // between 0–300ms
+    const delay = Math.random() * 300; // Stagger dice slightly
 
     const startRolling = () => {
       setIsSpinning(true);
       let rollCount = 0;
       const maxRolls = 10;
+
       const interval = setInterval(() => {
         rollCount++;
         setRollingValue(Math.floor(Math.random() * 6) + 1);
@@ -32,7 +31,6 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
         if (rollCount >= maxRolls) {
           clearInterval(interval);
           setTimeout(() => {
-            // Settle on the real rolled value from Redux
             setRollingValue(value);
             setRollingSide(sideIndex);
             setIsSpinning(false);
@@ -42,7 +40,6 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
     };
 
     const timeout = setTimeout(startRolling, delay);
-
     return () => {
       clearTimeout(timeout);
       setIsSpinning(false);

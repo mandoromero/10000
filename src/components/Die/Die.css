@@ -3,8 +3,8 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  perspective: 800px; 
 }
-
 .die {
   display: flex;
   justify-content: center;
@@ -14,7 +14,7 @@
 }
 
 .die:not(.rolling) {
-  animation: bounceIn 0.3s ease-out;
+  animation: bounceIn 0.4s ease-out;
 }
 
 @keyframes bounceIn {
@@ -25,10 +25,11 @@
 
 /* Animate the die when rolling */
 .rolling .die {
-  animation: spinDice 1s 10;
+  animation: spinDice 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
 @keyframes spinDice {
   0%   { transform: rotate3d(1, 1, 0, 0deg); }
+  50%  { transform: rotate3d(1, 1, 0, 180deg); }
   100% { transform: rotate3d(1, 1, 0, 360deg); }
 }
