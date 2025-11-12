@@ -10,13 +10,14 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
 
   useEffect(() => {
     if (!isRolling) {
+      // End animation and show final face
       setRollingValue(value);
       setRollingSide(sideIndex);
       setIsSpinning(false);
       return;
     }
 
-    const delay = Math.random() * 300; // Stagger dice slightly
+    const delay = Math.random() * 300; // Stagger start times
 
     const startRolling = () => {
       setIsSpinning(true);
@@ -40,6 +41,7 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
     };
 
     const timeout = setTimeout(startRolling, delay);
+
     return () => {
       clearTimeout(timeout);
       setIsSpinning(false);
