@@ -1,45 +1,42 @@
+// src/components/ScoreKeeper/ScoreKeeper.jsx
+import React from "react";
 import { useSelector } from "react-redux";
-import formatScore from "../../formatScore.js";
-import PlayerNameInput from "../PlayerNameInput/PlayerNameInput.jsx";
+import PlayerNameInput from "../PlayerNameInput/PlayerNameInput"
 import "./ScoreKeeper.css";
 
 export default function ScoreKeeper() {
-  // Get all needed state from Redux
-  const {
-    player1Score = 0,
-    player2Score = 0,
-    bankPoints = 0,
-    activePlayer = "player1",
-    player1Name = "Player 1",
-    player2Name = "Player 2",
-  } = useSelector((state) => state.dice);
-
-  // Helper to safely format numbers with leading zeros
-  const formatBank = (value) => (value ?? 0).toString().padStart(5, "0");
+  const player1Score = useSelector((state) => state.dice.player1Score);
+  const player2Score = useSelector((state) => state.dice.player2Score);
+  const turnTotal = useSelector((state) => state.dice.turnTotal);
+  const activePlayer = useSelector((state) => state.dice.activePlayer);
+  const player1Name = useSelector((state) => state.dice.player1Name);
+  const player2Name = useSelector((state) => state.dice.player2Name);
+  const finalRound = useSelector((state) => state.dice.finalRound);
+  const winner = useSelector((state) => state.dice.winner);
 
   return (
-    <div className="score-container">
-      {/* Player 1 */}
-      <div className="score">
-        <div className={`player player1 ${activePlayer === "player1" ? "active" : ""}`}>
-          <PlayerNameInput playerKey="player1" currentName={player1Name} />
-        </div>
-        <div className="player-1-score">{formatScore(player1Score)}</div>
+    <div className="scorekeeper-container">
+      <div className={`score-container ${activePlayer === "player1" ? "active" : ""}`}>
+        <PlayerNameInput player="player1" />
+        <p>Score:</p>
+        <p className="points">10000</p>
       </div>
 
-      {/* Bank */}
-      <div className="score">
-        <p className="banker">Bank</p>
-        <div className="bank-points">{formatBank(bankPoints)}</div>
+      <div className="bank-points">
+        <h3>Bank</h3>
+        <p>{turnTotal}</p>
       </div>
 
-      {/* Player 2 */}
-      <div className="score">
-        <div className={`player player2 ${activePlayer === "player2" ? "active" : ""}`}>
-          <PlayerNameInput playerKey="player2" currentName={player2Name} />
-        </div>
-        <div className="player-2-score">{formatScore(player2Score)}</div>
+      <div className={`score-container ${activePlayer === "player2" ? "active" : ""}`}>
+        <PlayerNameInput player="player2" />
+        <p>Score:</p>
+        <p className="points">{player2Score}</p>
       </div>
+
+      
+
+      {finalRound && !winner && <p className="final-round-indicator">Final Round!</p>}
+      {winner && <p className="winner-announcement">Winner: {winner}</p>}
     </div>
   );
 }

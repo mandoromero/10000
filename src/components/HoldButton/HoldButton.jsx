@@ -1,13 +1,15 @@
 import { useDispatch, useSelector } from "react-redux";
-import { toggleHold } from "../../redux/diceSlice";
+import { toggleHold } from "../../redux/diceSlice.js";
 import "../HoldButton/HoldButton.css";
 
 export default function HoldButton({ idx, held }) {
   const dispatch = useDispatch();
-  const currentRollId = useSelector(state => state.dice.currentRollId);
 
-  // Disable hold buttons until at least one roll has happened
-  const isDisabled = currentRollId === null;
+  // Get the indexes of scoring dice from current roll
+  const scoringDice = useSelector((state) => state.dice.currentRollScoringDice || []);
+
+  // Disable hold button if this die is not scoring
+  const isDisabled = !scoringDice.includes(idx);
 
   return (
     <button

@@ -15,7 +15,7 @@ export default function PlayerNameInput({ playerKey, currentName }) {
         type="text"
         value={currentName}
         onChange={handleChange}
-        placeholder={`Enter ${playerKey} name`}
+        placeholder={`Enter player name`}
       />
     </div>
   );

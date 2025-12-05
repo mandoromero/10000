@@ -1,65 +1,80 @@
 import { useDispatch, useSelector } from "react-redux";
-import { startRoll, setDice, setStartingPlayer, resetGame } from "../../redux/diceSlice.js";
+import {
+  startRoll,
+  stopRoll,
+  initialRollForStartingPlayer,
+  resetGame,
+} from "../../redux/diceSlice.js";
 import { useState } from "react";
 import "../StartButton/StartButton.css";
 
 export default function StartButton() {
   const dispatch = useDispatch();
   const [rolling, setRolling] = useState(false);
-  const gameStarted = useSelector((state) => state.dice.gameStarted);
+
+  const { gameStarted, winner } = useSelector((state) => state.dice);
 
   const handleStart = () => {
     if (rolling) return;
 
+    // If game is already running → restart everything
     if (gameStarted) {
-      // 🔄 If game is already running → reset only (don’t auto-start)
       dispatch(resetGame());
       return;
     }
 
-    // 🎲 If game not started → do the start roll animation
+    // ---- INITIAL STARTING PLAYER ROLL ----
     setRolling(true);
-    dispatch(startRoll()); // reset state and set gameStarted = true
+    dispatch(startRoll());
 
-    let rotations = 0;
-    let firstRoll, lastRoll;
+    let rolls = 0;
+    let firstValue = 1;
+    let lastValue = 1;
 
-    const rollAnimation = setInterval(() => {
-      firstRoll = Math.floor(Math.random() * 6) + 1;
-      lastRoll = Math.floor(Math.random() * 6) + 1;
+    const anim = setInterval(() => {
+      rolls++;
 
+      firstValue = Math.floor(Math.random() * 6) + 1;
+      lastValue = Math.floor(Math.random() * 6) + 1;
+
+      // Show animation by updating ONLY die 0 and die 5
       const animatedDice = Array.from({ length: 6 }, (_, idx) => {
         if (idx === 0)
-          return { value: firstRoll, sideIndex: Math.floor(Math.random() * 4), held: false };
+          return {
+            value: firstValue,
+            sideIndex: Math.floor(Math.random() * 4),
+            held: false,
+          };
         if (idx === 5)
-          return { value: lastRoll, sideIndex: Math.floor(Math.random() * 4), held: false };
+          return {
+            value: lastValue,
+            sideIndex: Math.floor(Math.random() * 4),
+            held: false,
+          };
         return { value: 1, sideIndex: 0, held: false };
       });
 
-      dispatch(setDice(animatedDice));
+      // Store the animation values
+      dispatch({
+        type: "dice/setAnimatedDice",
+        payload: animatedDice,
+      });
 
-      rotations++;
-      if (rotations >= 10) {
-        clearInterval(rollAnimation);
+      if (rolls >= 10) {
+        clearInterval(anim);
 
-        while (firstRoll === lastRoll) {
-          firstRoll = Math.floor(Math.random() * 6) + 1;
-          lastRoll = Math.floor(Math.random() * 6) + 1;
+        // --- ensure no tie ---
+        while (firstValue === lastValue) {
+          firstValue = Math.floor(Math.random() * 6) + 1;
+          lastValue = Math.floor(Math.random() * 6) + 1;
         }
 
-        const finalDice = Array.from({ length: 6 }, (_, idx) => {
-          if (idx === 0)
-            return { value: firstRoll, sideIndex: Math.floor(Math.random() * 4), held: false };
-          if (idx === 5)
-            return { value: lastRoll, sideIndex: Math.floor(Math.random() * 4), held: false };
-          return { value: 1, sideIndex: 0, held: false };
-        });
-
-        dispatch(setDice(finalDice));
-        dispatch(setStartingPlayer(firstRoll > lastRoll ? "player1" : "player2"));
+        // Now perform the official logic in the slice
+        dispatch(initialRollForStartingPlayer());
+        dispatch(stopRoll());
         setRolling(false);
       }
-    }, 150);
+    }, 120);
   };
 
   return (

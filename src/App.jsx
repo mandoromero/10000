@@ -3,11 +3,10 @@ import { useSelector, useDispatch } from "react-redux";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import Navbar from "./components/Navbar";
-import Rules from "../src/components/Rules/Rules.jsx";
-import Score from "../src/components/Score/Score.jsx";
-import GameBoard from "../src/components/GameBoard/GameBoard.jsx"
-import Header from "./components/Header/Header.jsx";  
+import Navbar from "./components/Navbar.jsx";
+import Rules from "./components/Rules/Rules.jsx";
+import Score from "./components/Score/Score.jsx";
+import GameBoard from "./components/GameBoard/GameBoard.jsx"
 
 function App() {
   const dispatch = useDispatch();
@@ -31,7 +30,6 @@ function App() {
           </div>
         </div>
       )}
-      <Header />
       <GameBoard />
     </div>
   );

@@ -16,7 +16,7 @@ export default function DiceBoard({ isRolling }) {
             idx={idx}
             value={die.value}
             sideIndex={die.sideIndex}
-            held={die.held || die.locked}
+            held={die.held} // Removed die.locked
             isRolling={isRolling && gameStarted && !winner}
           />
         ))}

@@ -15,14 +15,17 @@ export default function Navbar({ onShowRules }) {
         backgroundColor: "#edd4c2",
       }}
     >
-      <div className="container-fluid justify-content-between">
-        <StartButton />
-      </div>
-
-      <div className="ms-auto">
-        <button className="how-to-play" onClick={onShowRules}>
-          How to play
-        </button>
+      <StartButton />
+      <div className="container-fluid d-flex align-items-center justify-content-between ">
+        <div className="ms-auto text-center">
+          <h1 className="mb-0 me-2">10,000</h1>
+          <h3 className="mb-0">A Dice Game</h3>
+        </div>
+        <div className="ms-auto">
+          <button className="how-to-play" onClick={onShowRules}>
+            How to play
+          </button>
+        </div>
       </div>
     </nav>
   );

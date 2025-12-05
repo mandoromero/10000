@@ -10,7 +10,7 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
 
   useEffect(() => {
     if (!isRolling) {
-      // End animation and show final face
+      // Stop animation and show final die face
       setRollingValue(value);
       setRollingSide(sideIndex);
       setIsSpinning(false);
@@ -53,6 +53,7 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
       <div className="die">
         <DiceImage value={rollingValue} sideIndex={rollingSide} />
       </div>
+      {/* Player can hold scoring dice */}
       <HoldButton idx={idx} held={held} />
     </div>
   );
