@@ -4,6 +4,7 @@ import {
   stopRoll,
   initialRollForStartingPlayer,
   resetGame,
+  lockNames,
 } from "../../redux/diceSlice.js";
 import { useState } from "react";
 import "../StartButton/StartButton.css";
@@ -71,6 +72,7 @@ export default function StartButton() {
 
         // Now perform the official logic in the slice
         dispatch(initialRollForStartingPlayer());
+        dispatch(lockNames());
         dispatch(stopRoll());
         setRolling(false);
       }

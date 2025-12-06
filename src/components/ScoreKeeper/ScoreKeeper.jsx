@@ -17,18 +17,18 @@ export default function ScoreKeeper() {
   return (
     <div className="scorekeeper-container">
       <div className={`score-container ${activePlayer === "player1" ? "active" : ""}`}>
-        <PlayerNameInput player="player1" />
+        <PlayerNameInput playerKey="player1" />
         <p>Score:</p>
         <p className="points">10000</p>
       </div>
 
       <div className="bank-points">
         <h3>Bank</h3>
-        <p>{turnTotal}</p>
+        <p className="bank">10000</p>
       </div>
 
       <div className={`score-container ${activePlayer === "player2" ? "active" : ""}`}>
-        <PlayerNameInput player="player2" />
+        <PlayerNameInput playerKey="player2" />
         <p>Score:</p>
         <p className="points">{player2Score}</p>
       </div>

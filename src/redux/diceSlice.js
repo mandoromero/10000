@@ -21,6 +21,7 @@ const initialState = {
   winner: null,
   player1Name: "Player 1",
   player2Name: "Player 2",
+  namesLocked: false,
   finalRound: false,
   smoked: false,
   currentRoll: [],
@@ -42,6 +43,14 @@ const diceSlice = createSlice({
 
     setDice(state, action) {
       state.dice = action.payload;
+    },
+
+    setAnimatedDice(state, action) {
+      state.dice = action.payload;
+    },
+
+    lockNames(state) {
+      state.namesLocked = true;
     },
 
     setStartingPlayer(state, action) {
@@ -205,6 +214,8 @@ export const {
   initialRollForStartingPlayer,
   regularRoll,
   setDice,
+  setAnimatedDice,
+  lockNames,
   setStartingPlayer,
   toggleHold,
   addScore,
