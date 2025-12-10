@@ -1,3 +1,4 @@
+// src/components/GameButtons/GameButtons.jsx
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -5,49 +6,35 @@ import {
   stopRoll,
   regularRoll,
   bankPointsAndEndTurn,
-  nextTurn,
-  dismissSmokedOverlay,
 } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
 export default function GameButtons({ rollDisabled }) {
   const dispatch = useDispatch();
-
-  // Redux state
-  const gameStarted = useSelector((state) => state.dice.gameStarted);
-  const dice = useSelector((state) => state.dice.dice);
-  const activePlayer = useSelector((state) => state.dice.activePlayer);
-  const turnTotal = useSelector((state) => state.dice.turnTotal);
-  const player1Open = useSelector((state) => state.dice.player1Open);
-  const player2Open = useSelector((state) => state.dice.player2Open);
-  const winner = useSelector((state) => state.dice.winner);
-  const currentRollScore = useSelector((state) => state.dice.currentRollScore);
-
   const [isRolling, setIsRolling] = useState(false);
 
-  const allDiceUsed = dice.every((d) => d.held);
+  // Redux state
+  const { gameStarted, dice, activePlayer, turnTotal, player1Open, player2Open, winner } =
+    useSelector((state) => state.dice);
 
-  // Handle rolling dice
+  const allDiceHeld = dice.every((d) => d.held);
+
+  // Roll button handler
   const handleRoll = () => {
-    if (!gameStarted || winner) return;
+    if (!gameStarted || winner || isRolling) return;
 
     setIsRolling(true);
     dispatch(startRoll());
 
+    // Simulate dice rolling animation
     setTimeout(() => {
       dispatch(regularRoll());
       dispatch(stopRoll());
       setIsRolling(false);
-
-      // Automatically end turn if no scoring dice
-      if (currentRollScore === 0) {
-        dispatch(nextTurn());
-        dispatch(dismissSmokedOverlay());
-      }
-    }, 600);
+    }, 600); // match your dice animation timing
   };
 
-  // Handle banking points
+  // Bank button handler
   const handleBank = () => {
     if (!gameStarted || winner) return;
     dispatch(bankPointsAndEndTurn());
@@ -56,26 +43,24 @@ export default function GameButtons({ rollDisabled }) {
   // Determine if bank button should be disabled
   const bankDisabled =
     !gameStarted ||
-    allDiceUsed ||
+    allDiceHeld ||
     (activePlayer === "player1" && !player1Open && turnTotal < 1000) ||
     (activePlayer === "player2" && !player2Open && turnTotal < 1000);
 
   return (
     <div className="black-container">
       <div className="btns-container">
-        {/* Roll Button */}
         <button
-          onClick={handleRoll}
           className="roll-btn"
+          onClick={handleRoll}
           disabled={!gameStarted || rollDisabled || isRolling || !!winner}
         >
           {isRolling ? "Rolling..." : "Roll"}
         </button>
 
-        {/* Bank Button */}
         <button
-          onClick={handleBank}
           className="bank-btn"
+          onClick={handleBank}
           disabled={bankDisabled || !!winner}
         >
           Bank

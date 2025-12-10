@@ -13,18 +13,17 @@ export default function StartButton() {
   const dispatch = useDispatch();
   const [rolling, setRolling] = useState(false);
 
-  const { gameStarted, winner } = useSelector((state) => state.dice);
+  const { gameStarted } = useSelector((state) => state.dice);
 
   const handleStart = () => {
     if (rolling) return;
 
-    // If game is already running → restart everything
+    
     if (gameStarted) {
       dispatch(resetGame());
       return;
     }
 
-    // ---- INITIAL STARTING PLAYER ROLL ----
     setRolling(true);
     dispatch(startRoll());
 
@@ -71,7 +70,7 @@ export default function StartButton() {
         }
 
         // Now perform the official logic in the slice
-        dispatch(initialRollForStartingPlayer());
+        dispatch(initialRollForStartingPlayer({ firstValue, lastValue }));
         dispatch(lockNames());
         dispatch(stopRoll());
         setRolling(false);

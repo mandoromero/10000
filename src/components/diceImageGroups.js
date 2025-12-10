@@ -2,7 +2,6 @@ const diceModules = import.meta.glob("../../assets/10000_imgs/*.png", { eager: t
 
 const diceImagesGroups = Array.from({ length: 6 }, () => []);
 
-// Organize images into groups based on file name pattern: Die<value>_<variant>.png
 for (const [path, mod] of Object.entries(diceModules)) {
   const match = path.match(/Die(\d)_([a-d])\.png$/i);
   if (!match) continue;

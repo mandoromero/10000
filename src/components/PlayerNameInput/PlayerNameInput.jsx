@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPlayerName } from "../../redux/diceSlice.js";
 import "./PlayerNameInput.css";
 
-export default function PlayerNameInput({ playerKey }) {
+export default function PlayerNameInput({ playerKey, activePlayer }) {
   const dispatch = useDispatch();
   const namesLocked = useSelector((state) => state.dice.namesLocked);
 
@@ -25,7 +25,7 @@ export default function PlayerNameInput({ playerKey }) {
         onChange={handleChange}
         placeholder={`Enter player name`}
         disabled={namesLocked}
-      />
+        className={activePlayer === playerKey ? "active" : ""}      />
     </div>
   );
 }
