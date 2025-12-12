@@ -3,7 +3,7 @@ dice-board {
   display: flex; 
   justify-content: 
   space-around; 
-  height: 400px; 
+  height: 300px; 
 } 
 
 .dice-row {
