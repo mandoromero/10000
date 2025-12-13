@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { regularRoll, dismissSmokedOverlay } from "../../redux/diceSlice.js";
+import { regularRoll, dismissSmokedOverlay, bankPointsAndEndTurn } from "../../redux/diceSlice.js";
 
 import ScoreKeeper from "../ScoreKeeper/ScoreKeeper.jsx";
 import GameButtons from "../GameButtons/GameButtons.jsx";
@@ -19,30 +19,32 @@ export default function GameBoard() {
   const smoked = useSelector((state) => state.dice.smoked);
   const winner = useSelector((state) => state.dice.winner);
 
-  // Roll handler
+  const gameOver = !!winner || !gameStarted;
+
+  // --- Roll handler ---
   const handleRoll = () => {
     if (!gameStarted || winner) return;
 
     setRolling(true);
 
-    // simulate dice rolling animation delay
+    // Simulate dice rolling animation delay
     setTimeout(() => {
       dispatch(regularRoll());
       setRolling(false);
     }, 600);
   };
 
-  // Smoked overlay auto-dismiss
+  // --- Handle smoked turn ---
   useEffect(() => {
     if (smoked) {
-      const timeout = setTimeout(() => {
-        dispatch(dismissSmokedOverlay());
-      }, 2000);
-      return () => clearTimeout(timeout);
+      // Show dice for 3 seconds before switching turn
+      const timer = setTimeout(() => {
+        dispatch(dismissSmokedOverlay()); // hide smoked overlay
+        dispatch(bankPointsAndEndTurn()); // switch turn
+      }, 3000);
+      return () => clearTimeout(timer);
     }
   }, [smoked, dispatch]);
-
-  const gameOver = !!winner || !gameStarted;
 
   return (
     <div className="game-board">
@@ -60,7 +62,7 @@ export default function GameBoard() {
         {/* Roll & Bank buttons */}
         <GameButtons
           onRoll={handleRoll}
-          rollDisabled={gameOver || rolling}
+          rollDisabled={gameOver || rolling || smoked} // disable roll during smoked delay
         />
       </div>
 

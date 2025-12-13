@@ -16,9 +16,7 @@ const initialState = {
   player1Score: 0,
   player2Score: 0,
   turnTotal: 0,
-  player1Open: false,
-  player2Open: false,
-  winner: null,
+  bank: 0, // score from held dice
   player1Name: "Player 1",
   player2Name: "Player 2",
   namesLocked: false,
@@ -27,50 +25,53 @@ const initialState = {
   currentRoll: [],
   currentRollScore: 0,
   currentRollScoringDice: [],
-  bank: 0, // Score from held dice
+  winner: null,
+  // Track initial qualifying roll
+  player1Open: false,
+  player2Open: false,
 };
 
 const diceSlice = createSlice({
   name: "dice",
   initialState,
   reducers: {
+    // ---- Start/stop roll for animation ----
     startRoll(state) {
       state.isRolling = true;
     },
-
     stopRoll(state) {
       state.isRolling = false;
     },
 
-    setDice(state, action) {
-      state.dice = action.payload;
-    },
-
+    // ---- Animated dice for Start button ----
     setAnimatedDice(state, action) {
       state.dice = action.payload;
     },
 
+    // ---- Lock player names ----
     lockNames(state) {
       state.namesLocked = true;
     },
 
-    // INITIAL STARTING PLAYER ROLL
-    initialRollForStartingPlayer(state) {
-      if (state.gameStarted) return;
+    // ---- Starting player roll ----
+    startRollForStartingPlayer(state, action) {
+      const { firstValue, lastValue } = action.payload;
 
-      const firstDie = state.dice[0].value;
-      const lastDie = state.dice[5].value;
+      state.dice[0] = { value: firstValue, sideIndex: Math.floor(Math.random() * 4), held: false };
+      state.dice[5] = { value: lastValue, sideIndex: Math.floor(Math.random() * 4), held: false };
+      for (let i = 1; i <= 4; i++) state.dice[i] = { value: 1, sideIndex: 0, held: false };
 
-      if (firstDie > lastDie) state.activePlayer = "player1";
-      else if (lastDie > firstDie) state.activePlayer = "player2";
-      else state.activePlayer = null; // tie, Start must be clicked again
+      if (firstValue > lastValue) state.activePlayer = "player1";
+      else if (lastValue > firstValue) state.activePlayer = "player2";
+      else state.activePlayer = null;
 
       state.gameStarted = true;
-      state.currentRoll = [firstDie, ...Array(4).fill(null), lastDie];
+      state.currentRoll = [firstValue, null, null, null, null, lastValue];
       state.currentRollScore = 0;
+      state.currentRollScoringDice = [];
     },
 
-    // REGULAR ROLL DURING PLAYER TURN
+    // ---- Regular roll during turn ----
     regularRoll(state) {
       if (!state.gameStarted || state.winner) return;
 
@@ -81,70 +82,86 @@ const diceSlice = createSlice({
         sideIndex: d.held ? d.sideIndex : Math.floor(Math.random() * 4),
       }));
 
-      // Values of dice that just rolled (exclude held)
+      // Only unheld dice are scored for this roll
       const currentRollValues = state.dice
-        .map((d, idx) => (d.held ? null : d.value))
+        .map(d => (!d.held ? d.value : null))
         .filter(v => v !== null);
 
-      // Calculate score for current roll only (1s/5s three-of-a-kind rule applied)
       const { score, scoringDice } = calculateScore(currentRollValues);
 
       state.currentRoll = state.dice.map(d => d.value);
       state.currentRollScore = score;
-      state.currentRollScoringDice = scoringDice;
+
+      // Map scoring dice to real dice indices
+      let scoringIndices = [];
+      let unheldIndex = 0;
+      for (let i = 0; i < state.dice.length; i++) {
+        if (!state.dice[i].held) {
+          if (scoringDice.includes(unheldIndex)) scoringIndices.push(i);
+          unheldIndex++;
+        }
+      }
+      state.currentRollScoringDice = scoringIndices;
 
       if (score === 0) {
-        // Player "smoked" — no scoring dice
+        // Player smoked
         state.smoked = true;
         state.turnTotal = 0;
         state.bank = 0;
+        // Turn will be switched by UI after delay
       } else {
         state.smoked = false;
 
-        // Calculate score from all held dice
+        // Bank = sum of held dice only
         const heldValues = state.dice.filter(d => d.held).map(d => d.value);
         const heldScore = heldValues.length > 0 ? calculateScore(heldValues).score : 0;
 
-        // Total turn score = held dice score + current roll score
         state.bank = heldScore;
         state.turnTotal = heldScore + score;
       }
     },
 
-    // TOGGLE HOLD ON A DIE
+    // ---- Toggle hold on scoring dice ----
     toggleHold(state, action) {
       const idx = action.payload;
+      const die = state.dice[idx];
 
-      // Simply toggle the held state of the die
-      state.dice[idx].held = !state.dice[idx].held;
+      // Only scoring dice in current roll can be held
+      if (!state.currentRollScoringDice.includes(idx)) return;
 
-      // Calculate score from all held dice
+      die.held = !die.held;
+
+      // Recalculate bank (held dice only)
       const heldValues = state.dice.filter(d => d.held).map(d => d.value);
       const { score: heldScore } = calculateScore(heldValues);
       state.bank = heldScore;
 
-      // Calculate score from unheld dice in current roll
+      // Update turn total: bank + unheld scoring dice
       const unheldValues = state.dice.filter(d => !d.held).map(d => d.value);
       const { score: currentScore } = calculateScore(unheldValues);
-
-      // Update turn total: held + unheld scoring dice
       state.turnTotal = heldScore + currentScore;
     },
 
-    // BANK POINTS AND END TURN
+    // ---- Bank points and end turn ----
     bankPointsAndEndTurn(state) {
       const current = state.activePlayer;
       const points = state.turnTotal;
 
-      if (points === 0) {
-        // Smoked
-        state.smoked = true;
-        state.turnTotal = 0;
-        state.bank = 0;
-        state.activePlayer = current === "player1" ? "player2" : "player1";
-        return;
+      // First turn must score >= 1000 to open
+      if (!state[`${current}Open`]) {
+        if (points >= 1000) {
+          state[`${current}Open`] = true;
+        } else {
+          // Smoked/fail to open → lose turn
+          state.turnTotal = 0;
+          state.bank = 0;
+          state.smoked = true;
+          state.activePlayer = current === "player1" ? "player2" : "player1";
+          return;
+        }
       }
 
+      // Add points to score
       if (current === "player1") state.player1Score += points;
       else state.player2Score += points;
 
@@ -160,7 +177,7 @@ const diceSlice = createSlice({
         return;
       }
 
-      // End game logic for final round
+      // Final round logic
       if (state.finalRound && current === "player2") {
         if (p1 > p2) state.winner = state.player1Name;
         else if (p2 > p1) state.winner = state.player2Name;
@@ -174,21 +191,10 @@ const diceSlice = createSlice({
       state.bank = 0;
       state.dice = initialDice.map(d => ({ ...d, held: false }));
       state.activePlayer = current === "player1" ? "player2" : "player1";
-    },
-
-    addScore(state, action) {
-      state.turnTotal += action.payload;
-    }, 
-
-    nextTurn(state) {
-      state.activePlayer = state.activePlayer === "player1" ? "player2" : "player1";
-      state.turnTotal = 0;
-      state.bank = 0;
-      state.dice = initialDice.map(d => ({ ...d, held: false }));
-      state.isRolling = false;
       state.smoked = false;
     },
 
+    // ---- Dismiss smoked overlay ----
     dismissSmokedOverlay(state) {
       state.smoked = false;
     },
@@ -208,14 +214,11 @@ const diceSlice = createSlice({
 export const {
   startRoll,
   stopRoll,
-  initialRollForStartingPlayer,
-  regularRoll,
-  setDice,
   setAnimatedDice,
   lockNames,
+  startRollForStartingPlayer,
+  regularRoll,
   toggleHold,
-  addScore,
-  nextTurn,
   bankPointsAndEndTurn,
   dismissSmokedOverlay,
   setPlayerName,

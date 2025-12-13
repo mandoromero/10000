@@ -2,9 +2,10 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   startRoll,
   stopRoll,
-  initialRollForStartingPlayer,
+  startRollForStartingPlayer,
   resetGame,
   lockNames,
+  setAnimatedDice,
 } from "../../redux/diceSlice.js";
 import { useState } from "react";
 import "../StartButton/StartButton.css";
@@ -16,9 +17,7 @@ export default function StartButton() {
   const { gameStarted } = useSelector((state) => state.dice);
 
   const handleStart = () => {
-    if (rolling) return;
-
-    
+    // If game is already started, restart
     if (gameStarted) {
       dispatch(resetGame());
       return;
@@ -37,7 +36,7 @@ export default function StartButton() {
       firstValue = Math.floor(Math.random() * 6) + 1;
       lastValue = Math.floor(Math.random() * 6) + 1;
 
-      // Show animation by updating ONLY die 0 and die 5
+      // Only animate dice 0 and 5
       const animatedDice = Array.from({ length: 6 }, (_, idx) => {
         if (idx === 0)
           return {
@@ -54,24 +53,23 @@ export default function StartButton() {
         return { value: 1, sideIndex: 0, held: false };
       });
 
-      // Store the animation values
-      dispatch({
-        type: "dice/setAnimatedDice",
-        payload: animatedDice,
-      });
+      dispatch(setAnimatedDice(animatedDice));
 
       if (rolls >= 10) {
         clearInterval(anim);
 
-        // --- ensure no tie ---
+        // Ensure no tie
         while (firstValue === lastValue) {
           firstValue = Math.floor(Math.random() * 6) + 1;
           lastValue = Math.floor(Math.random() * 6) + 1;
         }
 
-        // Now perform the official logic in the slice
-        dispatch(initialRollForStartingPlayer({ firstValue, lastValue }));
+        // Set official starting player in slice
+        dispatch(startRollForStartingPlayer({ firstValue, lastValue }));
+
+        // Lock names after first roll
         dispatch(lockNames());
+
         dispatch(stopRoll());
         setRolling(false);
       }
