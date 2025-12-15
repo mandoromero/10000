@@ -6,16 +6,17 @@ import "../HoldButton/HoldButton.css";
 export default function HoldButton({ idx }) {
   const dispatch = useDispatch();
 
-  // Get dice info from Redux
   const dice = useSelector((state) => state.dice.dice);
   const currentRollScoringDice = useSelector(
-    (state) => state.dice.currentRollScoringDice || []
+    (state) => state.dice.currentRollScoringDice
   );
 
   const held = dice[idx].held;
 
-  // Disable hold button if this die is not scoring
-  const isDisabled = !currentRollScoringDice.includes(idx);
+  // ✅ FIX: allow holds ONLY if scoring dice exist AND this die is one of them
+  const isDisabled =
+    currentRollScoringDice.length === 0 ||
+    !currentRollScoringDice.includes(idx);
 
   const handleHold = () => {
     dispatch(toggleHold(idx));
@@ -31,4 +32,3 @@ export default function HoldButton({ idx }) {
     </button>
   );
 }
-

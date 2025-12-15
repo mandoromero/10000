@@ -9,15 +9,23 @@ import {
 } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
-export default function GameButtons({ rollDisabled }) {
+export default function GameButtons({ rollDisabled, onRoll, onBank }) {
   const dispatch = useDispatch();
   const [isRolling, setIsRolling] = useState(false);
 
   // Redux state
-  const { gameStarted, dice, activePlayer, turnTotal, player1Open, player2Open, winner } =
-    useSelector((state) => state.dice);
+  const {
+    gameStarted,
+    dice,
+    activePlayer,
+    turnTotal,
+    player1Open,
+    player2Open,
+    winner,
+  } = useSelector((state) => state.dice);
 
-  const allDiceHeld = dice.every((d) => d.held);
+  // ✅ FIXED: correct held check
+  const allHeld = dice.every((d) => d.held);
 
   // Roll button handler
   const handleRoll = () => {
@@ -28,10 +36,10 @@ export default function GameButtons({ rollDisabled }) {
 
     // Simulate dice rolling animation
     setTimeout(() => {
-      dispatch(regularRoll());
+      dispatch(regularRoll()); // slice handles releasing all dice if needed
       dispatch(stopRoll());
       setIsRolling(false);
-    }, 600); // match your dice animation timing
+    }, 600);
   };
 
   // Bank button handler
@@ -40,10 +48,10 @@ export default function GameButtons({ rollDisabled }) {
     dispatch(bankPointsAndEndTurn());
   };
 
-  // Determine if bank button should be disabled
+  // ✅ FIXED: proper bank disable logic
   const bankDisabled =
     !gameStarted ||
-    allDiceHeld ||
+    allHeld || // ⬅️ disable bank if all dice are held
     (activePlayer === "player1" && !player1Open && turnTotal < 1000) ||
     (activePlayer === "player2" && !player2Open && turnTotal < 1000);
 

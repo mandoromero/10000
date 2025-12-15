@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { regularRoll, dismissSmokedOverlay, bankPointsAndEndTurn } from "../../redux/diceSlice.js";
+import {
+  regularRoll,
+  dismissSmokedOverlay,
+  bankPointsAndEndTurn,
+} from "../../redux/diceSlice.js";
 
 import ScoreKeeper from "../ScoreKeeper/ScoreKeeper.jsx";
 import GameButtons from "../GameButtons/GameButtons.jsx";
@@ -21,52 +25,55 @@ export default function GameBoard() {
 
   const gameOver = !!winner || !gameStarted;
 
+  // --- STOP rolling on restart or game end ---
+  useEffect(() => {
+  if (smoked) {
+    const timer = setTimeout(() => {
+      dispatch(dismissSmokedOverlay());
+      dispatch(bankPointsAndEndTurn());
+    }, 3000);
+    return () => clearTimeout(timer);
+  }
+}, [smoked, dispatch]);
+
   // --- Roll handler ---
   const handleRoll = () => {
-    if (!gameStarted || winner) return;
+    if (!gameStarted || winner || smoked) return;
 
     setRolling(true);
 
-    // Simulate dice rolling animation delay
     setTimeout(() => {
       dispatch(regularRoll());
       setRolling(false);
     }, 600);
   };
 
-  // --- Handle smoked turn ---
-  useEffect(() => {
+  // --- Smoked delay ---
+   useEffect(() => {
     if (smoked) {
-      // Show dice for 3 seconds before switching turn
+      // Show rolled dice for 3 seconds, then switch turn
       const timer = setTimeout(() => {
-        dispatch(dismissSmokedOverlay()); // hide smoked overlay
-        dispatch(bankPointsAndEndTurn()); // switch turn
+        dispatch(dismissSmokedOverlay());  // hide smoked overlay
+        dispatch(bankPointsAndEndTurn()); // end turn automatically
       }, 3000);
+
       return () => clearTimeout(timer);
     }
   }, [smoked, dispatch]);
 
   return (
     <div className="game-board">
-      {/* Player scores */}
       <ScoreKeeper activePlayer={activePlayer} />
-
-      {/* Winning overlay */}
       <Winning />
 
-      {/* Game area */}
       <div className={`board-container ${gameOver ? "disabled" : ""}`}>
-        {/* Dice grid */}
         <DiceBoard isRolling={rolling} />
-
-        {/* Roll & Bank buttons */}
         <GameButtons
           onRoll={handleRoll}
-          rollDisabled={gameOver || rolling || smoked} // disable roll during smoked delay
+          rollDisabled={gameOver || rolling || smoked}
         />
       </div>
 
-      {/* Smoked modal */}
       <SmokedModal show={smoked} />
     </div>
   );
