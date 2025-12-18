@@ -76,7 +76,7 @@ const diceSlice = createSlice({
     },
 
     regularRoll(state) {
-      if (!state.gameStarted || state.winner) return;
+      if (!state.gameStarted || state.winner || state.smoked) return;
 
       if (state.dice.every(d => d.held)) {
         state.dice.forEach(d => (d.held = false));
@@ -89,14 +89,14 @@ const diceSlice = createSlice({
         }
       });
 
-      const rollValues = state.dice.filter(d => !d.held).map(d => d.value);
-      const { score, scoringDice } = calculateScore(rollValues);
+      const unheldValues = state.dice.filter(d => !d.held).map(d => d.value);
+      const { score, scoringDice } = calculateScore(unheldValues);
 
       state.currentRoll = state.dice.map(d => d.value);
       state.currentRollScore = score;
 
 
-      let map = [];
+      const map = [];
       let unheldIdx = 0;
       state.dice.forEach((d, i) => {
         if (!d.held) {
@@ -104,35 +104,40 @@ const diceSlice = createSlice({
           unheldIdx++;
         }
       });
+      
       state.currentRollScoringDice = map;
 
       if (score === 0) {
         state.smoked = true;
-        state.turnTotal = 0;
         state.currentRollScore = 0;
+        state.currentRollScoringDice = [];
       } else {
         state.smoked = false;
-        state.turnTotal = state.bank + score;
       }
     },
 
-    toggleHold(state, action) {
+    toggleHeld(state, action) {
       const idx = action.payload;
+      if (state.smoked || state.winner) return;
+
+      const die = state.dice[idx]
+      if (!die) return;
 
       if (!state.currentRollScoringDice.includes(idx)) return;
 
-      state.dice[idx].held = !state.dice[idx].held;
+      die.held = !die.held;
 
       const heldValues = state.dice
         .filter(d => d.held)
         .map(d => d.value);
+
       const { score: heldScore } = calculateScore(heldValues);
-      state.bank = heldScore;
+      state.bank = heldValues;
 
       const unheldValues = state.dice
         .filter(d => !d.held)
         .map(d => d.value);
-      const { score: currentScore, scoringDice: newScoring } = calculateScore(unheldValues);
+      const { scoringDice: newScoring } = calculateScore(unheldValues);
 
       let map = [];
       let unheldIdx = 0;
@@ -142,11 +147,9 @@ const diceSlice = createSlice({
           unheldIdx++;
         }
       });
-
-      state.currentRollScore = currentScore;
       state.currentRollScoringDice = map;
 
-      state.turnTotal = state.bank + state.currentRollScore;  
+      state.turnTotal = state.bank + state.currentRollScore;
     },
 
     bankPointsAndEndTurn(state) {

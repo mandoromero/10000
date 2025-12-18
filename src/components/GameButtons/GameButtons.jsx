@@ -1,5 +1,4 @@
 // src/components/GameButtons/GameButtons.jsx
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   startRoll,
@@ -9,9 +8,8 @@ import {
 } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
-export default function GameButtons({ rollDisabled, onRoll, onBank }) {
+export default function GameButtons({ rollDisabled, onRoll }) {
   const dispatch = useDispatch();
-  const [isRolling, setIsRolling] = useState(false);
 
   // Redux state
   const {
@@ -22,36 +20,24 @@ export default function GameButtons({ rollDisabled, onRoll, onBank }) {
     player1Open,
     player2Open,
     winner,
+    smoked,
   } = useSelector((state) => state.dice);
 
-  // ✅ FIXED: correct held check
   const allHeld = dice.every((d) => d.held);
 
-  // Roll button handler
   const handleRoll = () => {
-    if (!gameStarted || winner || isRolling) return;
-
-    setIsRolling(true);
-    dispatch(startRoll());
-
-    // Simulate dice rolling animation
-    setTimeout(() => {
-      dispatch(regularRoll()); // slice handles releasing all dice if needed
-      dispatch(stopRoll());
-      setIsRolling(false);
-    }, 600);
+    if (!gameStarted || winner || smoked) return;
+    onRoll(); // GameBoard controls timing & animation
   };
 
-  // Bank button handler
   const handleBank = () => {
     if (!gameStarted || winner) return;
     dispatch(bankPointsAndEndTurn());
   };
 
-  // ✅ FIXED: proper bank disable logic
   const bankDisabled =
     !gameStarted ||
-    allHeld || // ⬅️ disable bank if all dice are held
+    allHeld || // cannot bank if all dice are held
     (activePlayer === "player1" && !player1Open && turnTotal < 1000) ||
     (activePlayer === "player2" && !player2Open && turnTotal < 1000);
 
@@ -61,9 +47,9 @@ export default function GameButtons({ rollDisabled, onRoll, onBank }) {
         <button
           className="roll-btn"
           onClick={handleRoll}
-          disabled={!gameStarted || rollDisabled || isRolling || !!winner}
+          disabled={!gameStarted || rollDisabled || !!winner || smoked}
         >
-          {isRolling ? "Rolling..." : "Roll"}
+          Roll
         </button>
 
         <button

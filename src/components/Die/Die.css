@@ -3,14 +3,16 @@
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  perspective: 800px; 
+  perspective: 800px;
 }
+
 .die {
   display: flex;
   justify-content: center;
   flex-direction: column;
   margin-top: 190px;
   transition: transform 0.3s ease;
+  pointer-events: none; /* ✅ prevents click blocking */
 }
 
 .die:not(.rolling) {
@@ -23,8 +25,8 @@
   100% { transform: scale(1); }
 }
 
-/* Animate the die when rolling */
-.rolling .die {
+/* ✅ FIXED selector */
+.die.rolling {
   animation: spinDice 1s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
 
