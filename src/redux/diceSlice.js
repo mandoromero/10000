@@ -107,15 +107,19 @@ const diceSlice = createSlice({
         if (!d.held) {
           d.value = Math.floor(Math.random() * 6) + 1;
           d.sideIndex = Math.floor(Math.random() * 4);
+    }
+      });
+
+      /* ---------- COLLECT UNHELD VALUES ---------- */
+      const unheldDice = [];
+      state.dice.forEach((d, i) => {
+        if (!d.held) {
+          unheldDice.push({ value: d.value, index: i });
         }
       });
 
-      /* ---------- SCORE CURRENT ROLL ONLY ---------- */
-      const unheldValues = state.dice
-        .filter(d => !d.held)
-        .map(d => d.value);
-
-      const result = calculateScore(unheldValues);
+      const valuesOnly = unheldDice.map(d => d.value);
+      const result = calculateScore(valuesOnly);
 
       /* ---------- SMOKED ---------- */
       if (result.score === 0) {
@@ -124,42 +128,38 @@ const diceSlice = createSlice({
         state.currentRollScore = 0;
         state.currentRollScoringDice = [];
         state.currentRollDieScores = {};
-        state.currentRollCombos = result.combos;
+        state.currentRollCombos = [];
         state.turnTotal = state.bank;
         return;
       }
 
-      /* ---------- MAP SCORING DICE ---------- */
-      let map = [];
-      let unheldIndex = 0;
-      let dieScores = {};
+      /* ---------- MAP SCORING DICE BACK TO REAL INDEXES ---------- */
+      const scoringDice = [];
+      const dieScores = {};
 
-      state.dice.forEach((d, i) => {
-        if (!d.held) {
-          if (result.scoringDice.includes(unheldIndex)) {
-            map.push(i);
-            dieScores[i] = result.dieScores[unheldIndex];
-          }
-          unheldIndex++;
-        }
+      result.scoringDice.forEach(unheldIdx => {
+        const realIdx = unheldDice[unheldIdx].index;
+        scoringDice.push(realIdx);
+        dieScores[realIdx] = result.dieScores[unheldIdx];
       });
 
+      /* ---------- FINALIZE ROLL STATE ---------- */
       state.smoked = false;
       state.currentRollScore = result.score;
-      state.currentRollScoringDice = map;
+      state.currentRollScoringDice = scoringDice;
       state.currentRollDieScores = dieScores;
-      state.turnTotal = state.bank + state.currentRollScore;
+      state.currentRollCombos = result.combos;
+      state.turnTotal = state.bank + result.score;
 
       console.log(
-        "rollScore",
+        "rollScore:",
         state.currentRollScore,
-        "bank",
+        "bank:",
         state.bank,
-        "turnTotal",
+        "turnTotal:",
         state.turnTotal
       );
     },
-
 
     /* ---------------- HOLD DIE ---------------- */
 
