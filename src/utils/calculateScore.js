@@ -1,55 +1,56 @@
-function calculateScore(dice) {
-  if (!Array.isArray(dice) || dice.length === 0) {
-    return { score: 0, scoringDice: [] };
-  }
-
+export default function calculateScore(values) {
   const counts = {};
-  dice.forEach((die) => {
-    counts[die] = (counts[die] || 0) + 1;
-  });
+  values.forEach(v => (counts[v] = (counts[v] || 0) + 1));
 
-  let score = 0;
   const scoringDice = [];
+  const dieScores = {};
+  const combos = [];
+  let score = 0;
 
-  // Straight (1-6)
-  if (dice.length === 6 && [1, 2, 3, 4, 5, 6].every((n) => counts[n] === 1)) {
-    return { score: 1500, scoringDice: [0, 1, 2, 3, 4, 5] };
-  }
-
-  // Three pairs
-  if (Object.values(counts).length === 3 && Object.values(counts).every((c) => c === 2)) {
-    return { score: 750, scoringDice: [0, 1, 2, 3, 4, 5] };
-  }
-
-  // Triples or more
+  // combos (3+ of a kind)
   Object.entries(counts).forEach(([numStr, count]) => {
     const num = Number(numStr);
     if (count >= 3) {
-      const baseScore = num === 1 ? 1000 : num * 100;
-      const multiplier = Math.pow(2, count - 3);
-      score += baseScore * multiplier;
+      const base = num === 1 ? 1000 : num * 100;
+      const comboScore = base * Math.pow(2, count - 3);
 
-      // Add indexes of the first 'count' matching dice
-      let added = 0;
-      dice.forEach((die, idx) => {
-        if (die === num && added < count) {
-          scoringDice.push(idx);
-          added++;
+      const indexes = [];
+      values.forEach((v, i) => {
+        if (v === num && indexes.length < count) {
+          indexes.push(i);
+          scoringDice.push(i);
+          dieScores[i] = comboScore / count;
         }
+      });
+
+      combos.push({
+        diceIndexes: indexes,
+        score: comboScore,
+        heldCount: 0,
+        fullyHeld: false,
       });
     }
   });
 
-  // Singles (1s and 5s) not part of triples
-  dice.forEach((die, idx) => {
-    if ((die === 1 || die === 5) && !scoringDice.includes(idx)) {
-      if (die === 1) score += 100;
-      if (die === 5) score += 50;
-      scoringDice.push(idx);
+  // singles
+  values.forEach((v, i) => {
+    if (scoringDice.includes(i)) return;
+
+    if (v === 1 || v === 5) {
+      const val = v === 1 ? 100 : 50;
+      scoringDice.push(i);
+      dieScores[i] = val;
+
+      combos.push({
+        diceIndexes: [i],
+        score: val,
+        heldCount: 0,
+        fullyHeld: false,
+      });
     }
   });
 
-  return { score, scoringDice };
-}
+  score = Object.values(dieScores).reduce((a, b) => a + b, 0);
 
-export default calculateScore;
+  return { score, scoringDice, dieScores, combos };
+}

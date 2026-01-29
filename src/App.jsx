@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 import Navbar from "./components/Navbar.jsx";
 import Rules from "./components/Rules/Rules.jsx";
 import Score from "./components/Score/Score.jsx";

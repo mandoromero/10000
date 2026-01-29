@@ -6,6 +6,8 @@ import {
   resetGame,
   lockNames,
   setAnimatedDice,
+  startGame,
+  setDecidingFirstPlayer,
 } from "../../redux/diceSlice.js";
 import { useState } from "react";
 import "../StartButton/StartButton.css";
@@ -14,10 +16,21 @@ export default function StartButton() {
   const dispatch = useDispatch();
   const [rolling, setRolling] = useState(false);
 
-  const { gameStarted } = useSelector((state) => state.dice);
+  // ✅ Get state from Redux
+  const {
+    gameStarted,
+    isDecidingFirstPlayer,
+    isRolling,
+    smoked,
+  } = useSelector((state) => state.dice);
+
+  const rollDisabled =
+    !gameStarted ||
+    isDecidingFirstPlayer ||
+    isRolling ||
+    smoked;
 
   const handleStart = () => {
-    // If game is already started, restart
     if (gameStarted) {
       dispatch(resetGame());
       return;
@@ -25,6 +38,7 @@ export default function StartButton() {
 
     setRolling(true);
     dispatch(startRoll());
+    dispatch(setDecidingFirstPlayer(true));
 
     let rolls = 0;
     let firstValue = 1;
@@ -36,20 +50,11 @@ export default function StartButton() {
       firstValue = Math.floor(Math.random() * 6) + 1;
       lastValue = Math.floor(Math.random() * 6) + 1;
 
-      // Only animate dice 0 and 5
       const animatedDice = Array.from({ length: 6 }, (_, idx) => {
         if (idx === 0)
-          return {
-            value: firstValue,
-            sideIndex: Math.floor(Math.random() * 4),
-            held: false,
-          };
+          return { value: firstValue, sideIndex: Math.floor(Math.random() * 4), held: false };
         if (idx === 5)
-          return {
-            value: lastValue,
-            sideIndex: Math.floor(Math.random() * 4),
-            held: false,
-          };
+          return { value: lastValue, sideIndex: Math.floor(Math.random() * 4), held: false };
         return { value: 1, sideIndex: 0, held: false };
       });
 
@@ -64,13 +69,12 @@ export default function StartButton() {
           lastValue = Math.floor(Math.random() * 6) + 1;
         }
 
-        // Set official starting player in slice
         dispatch(startRollForStartingPlayer({ firstValue, lastValue }));
-
-        // Lock names after first roll
         dispatch(lockNames());
-
+        dispatch(startGame());
         dispatch(stopRoll());
+        dispatch(setDecidingFirstPlayer(false));
+
         setRolling(false);
       }
     }, 120);

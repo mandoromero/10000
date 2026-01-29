@@ -26,7 +26,6 @@ export default function GameButtons({ rollDisabled, onRoll }) {
   const allHeld = dice.every((d) => d.held);
 
   const handleRoll = () => {
-    if (!gameStarted || winner || smoked) return;
     onRoll(); // GameBoard controls timing & animation
   };
 

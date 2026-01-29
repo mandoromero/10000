@@ -51,7 +51,10 @@ export default function GameBoard() {
         />
       </div>
 
-      <SmokedModal show={smoked} />
+      {smoked && (
+        <SmokedModal onClose={() => dispatch(dismissSmokedOverlay())} />
+      )}
+      
     </div>
   );
 }
