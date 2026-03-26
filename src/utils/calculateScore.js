@@ -6,21 +6,61 @@ export default function calculateScore(values) {
   const dieScores = {};
   const combos = [];
   let score = 0;
+  let autoWin = false; // new flag for 6 ones
 
-  // combos (3+ of a kind)
+  // ---------- 3–6 OF A KIND ----------
   Object.entries(counts).forEach(([numStr, count]) => {
     const num = Number(numStr);
-    if (count >= 3) {
-      const base = num === 1 ? 1000 : num * 100;
-      const comboScore = base * Math.pow(2, count - 3);
 
+    if (count >= 3) {
       const indexes = [];
       values.forEach((v, i) => {
         if (v === num && indexes.length < count) {
           indexes.push(i);
           scoringDice.push(i);
-          dieScores[i] = comboScore / count;
         }
+      });
+
+      let comboScore;
+      let conditional = false;
+
+      if (num === 1) {
+        switch (count) {
+          case 3:
+            comboScore = 1000;
+            break;
+          case 4:
+            comboScore = 2000;
+            break;
+          case 5:
+            comboScore = 4000;
+            break;
+          case 6:
+            comboScore = 0; // points irrelevant; trigger auto-win elsewhere
+            autoWin = true;
+            break;
+        }
+      } else {
+        // 3–6 of other numbers
+        switch (count) {
+          case 3:
+            comboScore = 100 * num;
+            break;
+          case 4:
+            comboScore = 2 * 100 * num;
+            break;
+          case 5:
+            comboScore = 4 * 100 * num;
+            break;
+          case 6:
+            comboScore = 8 * 100 * num;
+            break;
+        }
+        conditional = true; // only score when all held
+      }
+
+      indexes.forEach(i => {
+        dieScores[i] = conditional ? 0 : comboScore / count;
       });
 
       combos.push({
@@ -28,11 +68,12 @@ export default function calculateScore(values) {
         score: comboScore,
         heldCount: 0,
         fullyHeld: false,
+        conditional,
       });
     }
   });
 
-  // singles
+  // ---------- SINGLES (1s and 5s) ----------
   values.forEach((v, i) => {
     if (scoringDice.includes(i)) return;
 
@@ -46,11 +87,12 @@ export default function calculateScore(values) {
         score: val,
         heldCount: 0,
         fullyHeld: false,
+        conditional: false,
       });
     }
   });
 
   score = Object.values(dieScores).reduce((a, b) => a + b, 0);
 
-  return { score, scoringDice, dieScores, combos };
+  return { score, scoringDice, dieScores, combos, autoWin };
 }
