@@ -189,88 +189,114 @@ const diceSlice = createSlice({
       // ----- TOGGLE HOLD -----
       die.held = !die.held;
 
-      // ----- UPDATE heldDiceThisTurn (NO RESET) -----
+      // ----- UPDATE heldDiceThisTurn (PERSIST ACROSS ROLLS) -----
       if (die.held) {
         if (!state.heldDiceThisTurn.find(d => d.index === idx)) {
           state.heldDiceThisTurn.push({
             index: idx,
             value: die.value,
+            rollId: state.rollId, // 🔥 track which roll this came from
           });
         }
       } else {
-        state.heldDiceThisTurn = state.heldDiceThisTurn.filter(
-          d => d.index !== idx
-        );
-      }
+    state.heldDiceThisTurn = state.heldDiceThisTurn.filter(
+      d => d.index !== idx
+    );
+  }
 
-      // ----- REBUILD BANK FROM ALL HELD DICE (ACROSS ROLLS) -----
-      const counts = {};
-      state.heldDiceThisTurn.forEach(d => {
-        counts[d.value] = (counts[d.value] || 0) + 1;
-      });
+  // =========================================================
+  // 🧠 BANK CALCULATION (CORE FIX)
+  // =========================================================
 
-      let newBank = 0;
+  let newBank = 0;
 
-      Object.entries(counts).forEach(([numStr, count]) => {
-        const num = Number(numStr);
+  // GROUP BY ROLL
+  const rolls = {};
 
-        if (count >= 3) {
-          if (num === 1) {
-            if (count === 3) newBank += 1000;
-            if (count === 4) newBank += 2000;
-            if (count === 5) newBank += 4000;
-            if (count === 6) newBank += 8000;
-         } else {
-            const base = num * 100;
-            if (count === 3) newBank += base;
-            if (count === 4) newBank += base * 2;
-            if (count === 5) newBank += base * 4;
-            if (count === 6) newBank += base * 8;
-          }
+  state.heldDiceThisTurn.forEach(d => {
+    if (!rolls[d.rollId]) rolls[d.rollId] = [];
+    rolls[d.rollId].push(d.value);
+  });
+
+  // CALCULATE EACH ROLL SEPARATELY
+  Object.values(rolls).forEach(values => {
+    const counts = {};
+
+    values.forEach(v => {
+      counts[v] = (counts[v] || 0) + 1;
+    });
+
+    Object.entries(counts).forEach(([numStr, count]) => {
+      const num = Number(numStr);
+
+      if (count >= 3) {
+        // ✅ combos ONLY within same roll
+        if (num === 1) {
+          if (count === 3) newBank += 1000;
+          if (count === 4) newBank += 2000;
+          if (count === 5) newBank += 4000;
+          if (count === 6) newBank += 8000;
         } else {
-          // singles
-          if (num === 1) newBank += count * 100;
-          if (num === 5) newBank += count * 50;
+          const base = num * 100;
+          if (count === 3) newBank += base;
+          if (count === 4) newBank += base * 2;
+          if (count === 5) newBank += base * 4;
+          if (count === 6) newBank += base * 8;
         }
-      });
+      } else {
+        // ✅ singles accumulate across rolls
+        if (num === 1) newBank += count * 100;
+        if (num === 5) newBank += count * 50;
+      }
+    });
+  });
 
-      state.bank = newBank;
+  state.bank = newBank;
 
-      // ----- UPDATE COMBO STATES FOR UI ONLY -----
-      state.currentRollCombos.forEach(combo => {
-        combo.heldCount = combo.diceIndexes.filter(i =>
-          state.dice[i].held
-        ).length;
+  // =========================================================
+  // 🎯 UPDATE COMBO STATE (UI ONLY)
+  // =========================================================
 
-        combo.fullyHeld = combo.heldCount === combo.diceIndexes.length;
-      });
+  state.currentRollCombos.forEach(combo => {
+    combo.heldCount = combo.diceIndexes.filter(i =>
+      state.dice[i].held
+    ).length;
 
-      // ----- UPDATE DIE SCORES FOR UI -----
-      const newDieScores = {};
+    combo.fullyHeld = combo.heldCount === combo.diceIndexes.length;
+  });
 
-      state.currentRollCombos.forEach(combo => {
-        combo.diceIndexes.forEach(i => {
-          if (combo.diceIndexes.length === 1) {
-            newDieScores[i] = combo.score;
-          } else {
-            newDieScores[i] = combo.fullyHeld
-              ? combo.score / combo.diceIndexes.length
-              : combo.conditional
-              ? 0
-              : combo.score / combo.diceIndexes.length;
-          }
-        });
-      });
+  // =========================================================
+  // 🎯 UPDATE DIE SCORES (UI)
+  // =========================================================
 
-      state.currentRollDieScores = newDieScores;
+  const newDieScores = {};
 
-      // ----- TURN TOTAL -----
-      const unheldScore = Object.entries(newDieScores)
-        .filter(([i]) => !state.dice[i].held)
-        .reduce((sum, [, val]) => sum + val, 0);
+  state.currentRollCombos.forEach(combo => {
+    combo.diceIndexes.forEach(i => {
+      if (combo.diceIndexes.length === 1) {
+        newDieScores[i] = combo.score;
+      } else {
+        newDieScores[i] = combo.fullyHeld
+          ? combo.score / combo.diceIndexes.length
+          : combo.conditional
+          ? 0
+          : combo.score / combo.diceIndexes.length;
+      }
+    });
+  });
 
-      state.turnTotal = state.bank + unheldScore;
-    },
+  state.currentRollDieScores = newDieScores;
+
+  // =========================================================
+  // 🎯 TURN TOTAL
+  // =========================================================
+
+  const unheldScore = Object.entries(newDieScores)
+    .filter(([i]) => !state.dice[i].held)
+    .reduce((sum, [, val]) => sum + val, 0);
+
+  state.turnTotal = state.bank + unheldScore;
+}
 
     /* ---------------- BANK POINTS ---------------- */
 
