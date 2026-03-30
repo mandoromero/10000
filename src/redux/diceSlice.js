@@ -58,7 +58,7 @@ const diceSlice = createSlice({
       state.activePlayer =
         firstValue > lastValue ? "player1" : "player2";
 
-      state.isDecidingFirstPlayer = false;
+        state.smoked = false;
 
       state.bank = 0;
       state.turnTotal = 0;
@@ -100,8 +100,6 @@ const diceSlice = createSlice({
       // ----- HOT DICE: reset all dice if everything is held -----
       if (state.dice.every(d => d.held)) {
         state.dice.forEach(d => (d.held = false));
-        state.heldDiceThisTurn = []; // reset banked dice if hot dice
-        state.bank = 0;
       }
 
       // ----- ROLL ONLY UNHELD DICE -----
@@ -129,7 +127,9 @@ const diceSlice = createSlice({
         state.currentRollScoringDice = [];
         state.currentRollDieScores = {};
         state.currentRollCombos = [];
-        state.turnTotal = state.bank; // keep bank from previous held dice
+        state.turnTotal = 0; // banked points are lost
+        state.bank = 0;
+        state.heldDiceThisTurn = [];
         return;
       }
 
@@ -154,14 +154,16 @@ const diceSlice = createSlice({
       state.currentRollScore = result.score;
       state.currentRollScoringDice = scoringDice;
       state.currentRollDieScores = dieScores;
-      state.currentRollCombos = result.combos;
+
+      state.currentRollCombos = result.combos.map(combo => ({
+        ...combo, 
+        diceIndexes: combo.diceIndexes.map(unheldIdx =>
+          unheldDice[unheldIdx].index
+        )
+      }));
 
       // ----- TURN TOTAL = BANK + UNHELD SCORING DICE -----
-      const currentRollPotential = Object.entries(dieScores)
-        .filter(([i]) => !state.heldDiceThisTurn.find(d => d.index === Number(i)))
-        .reduce((sum, [i, val]) => sum + val, 0);
-
-      state.turnTotal = state.bank + currentRollPotential;
+      state.turnTotal = state.bank + result.score;
 
       console.log(
         "rollScore:", state.currentRollScore,
@@ -174,65 +176,101 @@ const diceSlice = createSlice({
 
     toggleHold(state, action) {
       const idx = action.payload;
-
-      // Only allow holding dice that scored in this roll or already held
-      if (!state.currentRollScoringDice.includes(idx) && !state.heldDiceThisTurn.find(d => d.index === idx)) return;
-
       const die = state.dice[idx];
+
+      // ----- VALIDATE HOLD -----
+      const isScoringDie = state.currentRollDieScores[idx] > 0;
+
+      if (
+        !isScoringDie &&
+        !state.heldDiceThisTurn.find(d => d.index === idx)
+      ) return;
+
+      // ----- TOGGLE HOLD -----
       die.held = !die.held;
 
+      // ----- UPDATE heldDiceThisTurn (NO RESET) -----
       if (die.held) {
-        // Add to heldDiceThisTurn if not already held
         if (!state.heldDiceThisTurn.find(d => d.index === idx)) {
           state.heldDiceThisTurn.push({
             index: idx,
-            score: state.currentRollDieScores[idx], // store score at the time it was first held
+            value: die.value,
           });
         }
       } else {
-        // Remove die if unheld
-        state.heldDiceThisTurn = state.heldDiceThisTurn.filter(d => d.index !== idx);
+        state.heldDiceThisTurn = state.heldDiceThisTurn.filter(
+          d => d.index !== idx
+        );
       }
 
-      // ----- CONDITIONAL 3-OF-A-KIND LOGIC -----
-      state.currentRollCombos.forEach(combo => {
-        if (!combo.diceIndexes.includes(idx)) return;
+      // ----- REBUILD BANK FROM ALL HELD DICE (ACROSS ROLLS) -----
+      const counts = {};
+      state.heldDiceThisTurn.forEach(d => {
+        counts[d.value] = (counts[d.value] || 0) + 1;
+      });
 
-        combo.heldCount += die.held ? 1 : -1;
+      let newBank = 0;
 
-        if (combo.heldCount === combo.diceIndexes.length && !combo.fullyHeld) {
-          // Only add points when fully held
-          state.bank += combo.score;
-          combo.fullyHeld = true;
+      Object.entries(counts).forEach(([numStr, count]) => {
+        const num = Number(numStr);
 
-          // For conditional combos (2–6), update dieScores for UI
-          if (combo.conditional) {
-            combo.diceIndexes.forEach(i => {
-              state.currentRollDieScores[i] = combo.score / combo.diceIndexes.length;
-            });
+        if (count >= 3) {
+          if (num === 1) {
+            if (count === 3) newBank += 1000;
+            if (count === 4) newBank += 2000;
+            if (count === 5) newBank += 4000;
+            if (count === 6) newBank += 8000;
+         } else {
+            const base = num * 100;
+            if (count === 3) newBank += base;
+            if (count === 4) newBank += base * 2;
+            if (count === 5) newBank += base * 4;
+            if (count === 6) newBank += base * 8;
           }
-        }
-
-        if (!die.held && combo.fullyHeld) {
-          // Remove points if unholding fully held combo
-          state.bank -= combo.score;
-          combo.fullyHeld = false;
-
-          if (combo.conditional) {
-            combo.diceIndexes.forEach(i => {
-              state.currentRollDieScores[i] = 0;
-            });
-          }
+        } else {
+          // singles
+          if (num === 1) newBank += count * 100;
+          if (num === 5) newBank += count * 50;
         }
       });
 
-      // Recalculate turnTotal = bank + unheld scoring dice
-      const currentRollScore = Object.entries(state.currentRollDieScores)
-        .filter(([i]) => !state.heldDiceThisTurn.find(d => d.index === Number(i)))
-        .reduce((sum, [i, val]) => sum + val, 0);
+      state.bank = newBank;
 
-      state.turnTotal = state.bank + currentRollScore;
-    },  
+      // ----- UPDATE COMBO STATES FOR UI ONLY -----
+      state.currentRollCombos.forEach(combo => {
+        combo.heldCount = combo.diceIndexes.filter(i =>
+          state.dice[i].held
+        ).length;
+
+        combo.fullyHeld = combo.heldCount === combo.diceIndexes.length;
+      });
+
+      // ----- UPDATE DIE SCORES FOR UI -----
+      const newDieScores = {};
+
+      state.currentRollCombos.forEach(combo => {
+        combo.diceIndexes.forEach(i => {
+          if (combo.diceIndexes.length === 1) {
+            newDieScores[i] = combo.score;
+          } else {
+            newDieScores[i] = combo.fullyHeld
+              ? combo.score / combo.diceIndexes.length
+              : combo.conditional
+              ? 0
+              : combo.score / combo.diceIndexes.length;
+          }
+        });
+      });
+
+      state.currentRollDieScores = newDieScores;
+
+      // ----- TURN TOTAL -----
+      const unheldScore = Object.entries(newDieScores)
+        .filter(([i]) => !state.dice[i].held)
+        .reduce((sum, [, val]) => sum + val, 0);
+
+      state.turnTotal = state.bank + unheldScore;
+    },
 
     /* ---------------- BANK POINTS ---------------- */
 
@@ -244,27 +282,28 @@ const diceSlice = createSlice({
         state.activePlayer =
           current === "player1" ? "player2" : "player1";
 
-        state.bank = 0;
-        state.turnTotal = 0;
-        state.currentRollScore = 0;
-        state.currentRollScoringDice = [];
-        state.currentRollDieScores = {};
-        state.heldDiceThisTurn = [];
-        state.dice = createInitialDice();
-        state.smoked = false;
+          state.bank = 0;
+          state.turnTotal = 0;
+          state.currentRollScore = 0;
+          state.currentRollScoringDice = [];
+          state.currentRollDieScores = {};
+          state.heldDiceThisTurn = [];
+          state.dice = createInitialDice();
+          state.smoked = false;
+          state.currentRollCombo = [];
 
-        return;
-      }
-
-      /* 💰 NORMAL BANKING FLOW */
-      const points = state.bank;
-
-      if (!state[`${current}Open`]) {
-        if (points < 1000) {
-          state.activePlayer =
-            current === "player1" ? "player2" : "player1";
           return;
         }
+
+      /* 💰 NORMAL BANKING FLOW */
+        const points = state.bank;
+
+        if (!state[`${current}Open`]) {
+          if (points < 1000) {
+            state.activePlayer =
+              current === "player1" ? "player2" : "player1";
+           return;
+          }
         state[`${current}Open`] = true;
       }
 

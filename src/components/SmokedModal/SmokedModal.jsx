@@ -13,7 +13,7 @@ export default function SmokedModal({ show }) {
 
   return (
     <div className="smoked-modal">
-      <p>No scoring dice! Turn is smoked.</p>
+      <p>No scoring dice! You smoked your turn.</p>
       <button onClick={handleOk}>OK</button>
     </div>
   );
