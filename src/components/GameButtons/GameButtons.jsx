@@ -4,6 +4,7 @@ import {
   startRoll,
   stopRoll,
   regularRoll,
+  toggleHold,
   bankPointsAndEndTurn,
 } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
@@ -11,7 +12,6 @@ import "../GameButtons/GameButtons.css";
 export default function GameButtons({ rollDisabled, onRoll }) {
   const dispatch = useDispatch();
 
-  // Redux state
   const {
     gameStarted,
     dice,
@@ -21,24 +21,39 @@ export default function GameButtons({ rollDisabled, onRoll }) {
     player2Open,
     winner,
     smoked,
+    heldDiceThisTurn,
+    currentRollScoringDice,
+    bank,
   } = useSelector((state) => state.dice);
 
-  const allHeld = dice.every((d) => d.held);
-
+  // Player must hold at least one scoring die to roll again
+  const scoringHeld = heldDiceThisTurn.length > 0;
+  const allDiceHeld = dice.every(d => d.held);
+  
+  // ----------------- BUTTON HANDLERS -----------------
   const handleRoll = () => {
-    onRoll(); // GameBoard controls timing & animation
+    if (!gameStarted || winner || smoked) return;
+    if (!scoringHeld && heldDiceThisTurn.length > 0) return; // must hold at least one scoring die
+    onRoll(); // animation controlled by GameBoard
   };
 
   const handleBank = () => {
-    if (!gameStarted || winner) return;
+    if (!gameStarted || winner || smoked) return;
     dispatch(bankPointsAndEndTurn());
   };
 
+  // ----------------- DISABLE LOGIC -----------------
+  const firstTurn = activePlayer === "player1" ? !player1Open : !player2Open;
+
+  const rollDisabledComputed =
+    !gameStarted || smoked || winner || (allDiceHeld && scoringHeld) || rollDisabled;
+
   const bankDisabled =
     !gameStarted ||
-    allHeld || // cannot bank if all dice are held
-    (activePlayer === "player1" && !player1Open && turnTotal < 1000) ||
-    (activePlayer === "player2" && !player2Open && turnTotal < 1000);
+    smoked ||
+    winner ||
+    (!scoringHeld) || // must hold at least one scoring die before banking
+    (firstTurn && bank < 1000); // first turn must bank 1000+
 
   return (
     <div className="black-container">
@@ -46,7 +61,7 @@ export default function GameButtons({ rollDisabled, onRoll }) {
         <button
           className="roll-btn"
           onClick={handleRoll}
-          disabled={!gameStarted || rollDisabled || !!winner || smoked}
+          disabled={rollDisabledComputed}
         >
           Roll
         </button>
@@ -54,7 +69,7 @@ export default function GameButtons({ rollDisabled, onRoll }) {
         <button
           className="bank-btn"
           onClick={handleBank}
-          disabled={bankDisabled || !!winner}
+          disabled={bankDisabled}
         >
           Bank
         </button>

@@ -8,7 +8,6 @@ export default function ScoreKeeper() {
   const {
     player1Score,
     player2Score,
-    turnTotal,
     activePlayer,
     player1Name,
     player2Name,
@@ -21,13 +20,8 @@ export default function ScoreKeeper() {
     <div className="scorekeeper-container">
       
       {/* PLAYER 1 */}
-      <div
-        className={`score-container ${
-          activePlayer === "player1" ? "active" : ""
-        }`}
-      >
+      <div className={`score-container ${activePlayer === "player1" ? "active" : ""}`}>
         <PlayerNameInput playerKey="player1" activePlayer={activePlayer} />
-
         <div className="points-display">
           <p>Score:</p>
           <p className="points">{player1Score}</p>
@@ -41,23 +35,16 @@ export default function ScoreKeeper() {
       </div>
 
       {/* PLAYER 2 */}
-      <div
-        className={`score-container ${
-          activePlayer === "player2" ? "active" : ""
-        }`}
-      >
+      <div className={`score-container ${activePlayer === "player2" ? "active" : ""}`}>
         <PlayerNameInput playerKey="player2" activePlayer={activePlayer} />
-
         <div className="points-display">
           <p>Score:</p>
           <p className="points">{player2Score}</p>
         </div>
       </div>
 
-      {/* STATUS DISPLAY */}
-      {finalRound && !winner && (
-        <p className="final-round-indicator">Final Round!</p>
-      )}
+      {/* FINAL ROUND / WINNER */}
+      {finalRound && !winner && <p className="final-round-indicator">Final Round!</p>}
       {winner && <p className="winner-announcement">Winner: {winner}</p>}
     </div>
   );
