@@ -293,6 +293,9 @@ const diceSlice = createSlice({
       
       state.activePlayer = 
         state.activePlayer === "player1" ? "player2" : "player1";
+
+      console.log("ERROR smoked:", smoked)
+
     },
 
     /* ---------------- SMOKED OVERLAY ---------------- */
