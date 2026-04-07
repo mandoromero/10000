@@ -1,39 +1,24 @@
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
-import { bankPointsAndEndTurn } from "../../redux/diceSlice.js";
-import Die from "../Die/Die.jsx";
+import { useSelector } from "react-redux";
 import SmokedModal from "../SmokedModal/SmokedModal.jsx";
+import Die from "../Die/Die.jsx";
 import "./DiceBoard.css";
 
 export default function DiceBoard({ isRolling }) {
-  const dispatch = useDispatch();
 
   const dice = useSelector((state) => state.dice.dice);
+  const smoked = useSelector((state) => state.dice.smoked);
   const winner = useSelector((state) => state.dice.winner);
-  const gameStarted = useSelector((state) => state.dice.gameStarted);
-  const smoked = useSelector(state => state.dice.smoked);
   const isDecidingFirstPlayer = useSelector(
     state => state.dice.isDecidingFirstPlayer
   );
 
-  useEffect(() => {
-    if (smoked) {
-      const timer = setTimeout(() => {
-        dispatch(bankPointsAndEndTurn());
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [smoked, dispatch]);
-
   return (
     <div className={`dice-board ${winner || isDecidingFirstPlayer ? "disabled" : ""}`}>
+      {smoked && <SmokedModal />}
       <div className="dice-row">
-        {smoked && <SmokedModal />}
-
         {dice.map((die, idx) => (
           <Die
-            key={idx}
+            key={`${idx}-${die.value}-${die.held}`}
             idx={idx}
             value={die.value}
             sideIndex={die.sideIndex}

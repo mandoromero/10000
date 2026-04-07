@@ -1,4 +1,5 @@
 dice-board { 
+  position: relative;
   background-color: green; 
   display: flex; 
   justify-content: 

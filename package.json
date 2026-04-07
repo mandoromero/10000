@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.6.0",
+    "@reduxjs/toolkit": "^2.11.2",
     "bootstrap": "^5.3.7",
     "react": "^19.0.0",
     "react-confetti": "^6.4.0",

@@ -1,9 +1,17 @@
 game-board {
     background-color: green;
     padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+board-container {
+    border: 5px dashed red;
 }
 
 board.containter.disabled {
     opacity: 0.4;
     filter: grayscale(0.6);
+    display: flex;
 }

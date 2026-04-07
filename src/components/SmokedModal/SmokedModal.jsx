@@ -1,20 +1,23 @@
 import { useDispatch } from "react-redux";
-import { dismissSmokedOverlay, bankPointsAndEndTurn } from "../../redux/diceSlice.js";
+import { endTurnNoScore } from "../../redux/diceSlice";
+import "./SmokedModal.css";
 
-export default function SmokedModal({ show }) {
+export default function SmokedModal() {
   const dispatch = useDispatch();
 
-  if (!show) return null;
-
-  const handleOk = () => {
-    dispatch(dismissSmokedOverlay());   // hide the modal
-    dispatch(bankPointsAndEndTurn());   // end turn
+  const handleClose = () => {
+    dispatch(endTurnNoScore());
   };
 
   return (
-    <div className="smoked-modal">
-      <p>No scoring dice! You smoked your turn.</p>
-      <button onClick={handleOk}>OK</button>
+    <div className="smoked-overlay">
+      <div className="smoked-modal">
+        <p>No scoring dice! You smoked your turn.</p>
+        <button className="smoked-btn" onClick={handleClose}>
+          Close
+        </button>
+      </div>
+      
     </div>
   );
 }

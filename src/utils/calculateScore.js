@@ -70,6 +70,23 @@ export default function calculateScore(values) {
         fullyHeld: false,
         conditional,
       });
+
+      const Counts = {};
+      values.forEach(v => counts[v] = (counts[v] || 0) + 1);
+
+      const pairs = Object.values(counts).filter(c => c === 2).length;
+
+      if (pairs === 3) {
+        return {
+          score: 750,
+          scoringDice: values.map((_, i) => i),
+          dieScores: Object.fromEntries(values.map((_, i) => [i,0])),
+          combos: [{
+            type: "three-pairs",
+            diceIndexes: values.map((_, i) => i)
+          }]
+        }
+      }
     }
   });
 

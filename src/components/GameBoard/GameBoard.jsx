@@ -1,11 +1,10 @@
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { regularRoll } from "../../redux/diceSlice.js";
+import { useState } from "react";
+import { regularRoll, dismissSmokedOverlay, endTurnNoScore } from "../../redux/diceSlice.js";
 
 import ScoreKeeper from "../ScoreKeeper/ScoreKeeper.jsx";
 import GameButtons from "../GameButtons/GameButtons.jsx";
 import DiceBoard from "../DiceBoard/DiceBoard.jsx";
-import SmokedModal from "../SmokedModal/SmokedModal.jsx";
 import Winning from "../Winning/Winning.jsx";
 
 import "../GameBoard/GameBoard.css";
@@ -23,26 +22,23 @@ export default function GameBoard() {
 
   const gameOver = !!winner || !gameStarted;
 
-  // ✅ FIXED roll handler
   const handleRoll = () => {
     if (!gameStarted || winner || smoked || rolling) return;
 
     setRolling(true);
 
-    // 🔥 IMPORTANT: roll dice FIRST
-    dispatch(regularRoll());
-
-    // then let animation play
     setTimeout(() => {
+      dispatch(regularRoll());
       setRolling(false);
     }, 600);
   };
 
+  console.log("RENDER smoked:", smoked);
+  
   return (
     <div className="game-board">
       <ScoreKeeper activePlayer={activePlayer} />
       <Winning />
-
       <div className={`board-container ${gameOver ? "disabled" : ""}`}>
         <DiceBoard isRolling={rolling} />
         <GameButtons
@@ -51,10 +47,7 @@ export default function GameBoard() {
         />
       </div>
 
-      {smoked && (
-        <SmokedModal onClose={() => dispatch(dismissSmokedOverlay())} />
-      )}
-      
+     
     </div>
   );
 }

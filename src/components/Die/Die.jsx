@@ -43,7 +43,7 @@ export default function Die({ idx, value, sideIndex, held, isRolling }) {
       </div>
 
       {/* Hold logic remains 100% unchanged */}
-      <HoldButton idx={idx} />
+      <HoldButton idx={idx} held={held} />
     </div>
   );
 }

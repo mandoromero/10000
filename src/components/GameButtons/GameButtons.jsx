@@ -1,12 +1,5 @@
-// src/components/GameButtons/GameButtons.jsx
 import { useDispatch, useSelector } from "react-redux";
-import {
-  startRoll,
-  stopRoll,
-  regularRoll,
-  toggleHold,
-  bankPointsAndEndTurn,
-} from "../../redux/diceSlice.js";
+import { bankPointsAndEndTurn, dismissSmokedOverlay } from "../../redux/diceSlice.js";
 import "../GameButtons/GameButtons.css";
 
 export default function GameButtons({ rollDisabled, onRoll }) {
@@ -16,44 +9,56 @@ export default function GameButtons({ rollDisabled, onRoll }) {
     gameStarted,
     dice,
     activePlayer,
-    turnTotal,
     player1Open,
     player2Open,
     winner,
     smoked,
     heldDiceThisTurn,
-    currentRollScoringDice,
     bank,
+    currentRollScore,
   } = useSelector((state) => state.dice);
 
-  // Player must hold at least one scoring die to roll again
-  const scoringHeld = heldDiceThisTurn.length > 0;
   const allDiceHeld = dice.every(d => d.held);
-  
-  // ----------------- BUTTON HANDLERS -----------------
+
+  // ✅ Must hold at least 1 die AFTER a roll to continue
+  const hasHeldDice = heldDiceThisTurn.length > 0;
+
+  // ✅ First turn rule
+  const firstTurn =
+    activePlayer === "player1" ? !player1Open : !player2Open;
+
+  // ----------------- ROLL -----------------
   const handleRoll = () => {
     if (!gameStarted || winner || smoked) return;
-    if (!scoringHeld && heldDiceThisTurn.length > 0) return; // must hold at least one scoring die
-    onRoll(); // animation controlled by GameBoard
+
+    // ❌ If NOT first roll AND no dice held → block
+    if (currentRollScore > 0 && !hasHeldDice) return;
+
+    onRoll();
   };
 
+  // ----------------- BANK -----------------
   const handleBank = () => {
     if (!gameStarted || winner || smoked) return;
+
     dispatch(bankPointsAndEndTurn());
   };
 
   // ----------------- DISABLE LOGIC -----------------
-  const firstTurn = activePlayer === "player1" ? !player1Open : !player2Open;
 
   const rollDisabledComputed =
-    !gameStarted || smoked || winner || (allDiceHeld && scoringHeld) || rollDisabled;
+    !gameStarted ||
+    !!winner ||
+    smoked ||
+    (currentRollScore > 0 && !hasHeldDice && !allDiceHeld) || // must hold at least 1 unless hot dice
+    rollDisabled;
 
   const bankDisabled =
     !gameStarted ||
+    !!winner ||
     smoked ||
-    winner ||
-    (!scoringHeld) || // must hold at least one scoring die before banking
-    (firstTurn && bank < 1000); // first turn must bank 1000+
+    !hasHeldDice || // must have held something
+    (firstTurn && bank < 1000); // must open with 1000+
 
   return (
     <div className="black-container">
