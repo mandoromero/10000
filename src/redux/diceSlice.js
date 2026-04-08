@@ -289,7 +289,7 @@ const diceSlice = createSlice({
       state.currentRollDieScores = {};
       state.heldDiceThisTurn = [];
 
-      state.smoked + false;
+      state.smoked = false;
       
       state.activePlayer = 
         state.activePlayer === "player1" ? "player2" : "player1";
