@@ -34,6 +34,7 @@ const initialState = {
 
   smoked: false,
   finalRound: false,
+  finalRoundStarter: null,
   winner: null,
 
   player1Name: "Player 1",
@@ -255,47 +256,97 @@ const diceSlice = createSlice({
       const current = state.activePlayer;
       const points = state.bank;
 
-      // First-turn open rule: must bank 1000+
+      // Must open with 1000
       if (!state[`${current}Open`] && points < 1000) return;
 
-      // Add points to player's total
-      if (current === "player1") state.player1Score += points;
-      else state.player2Score += points;
+      // Add score
+      if (current === "player1") {
+        state.player1Score += points;
+      } else {
+        state.player2Score += points;
+      }
 
-      // Open player if first time
-      if (!state[`${current}Open`]) state[`${current}Open`] = true;
+      // Open player
+      if (!state[`${current}Open`]) {
+        state[`${current}Open`] = true;
+      }
 
-      // Reset turn
+      const player1 = state.player1Score;
+      const player2 = state.player2Score;
+
+      // -----------------------------------
+      // START FINAL ROUND
+      // -----------------------------------
+      if (!state.finalRound && (player1 >= 10000 || player2 >= 10000)) {
+        state.finalRound = true;
+        state.finalRoundStarter = current;
+
+        // Give opponent ONE final turn
+        state.activePlayer =
+          current === "player1" ? "player2" : "player1";
+      }
+
+      // -----------------------------------
+      // FINAL ROUND COMPLETE
+      // -----------------------------------
+      else if (
+        state.finalRound &&
+        current !== state.finalRoundStarter
+      ) {
+        if (player1 > player2) {
+          state.winner = state.player1Name;
+        } else if (player2 > player1) {
+          state.winner = state.player2Name;
+        } else {
+          state.winner = "It's a tie!";
+        }
+      }
+
+      // -----------------------------------
+      // NORMAL TURN SWITCH
+      // -----------------------------------
+      else {
+        state.activePlayer =
+          current === "player1" ? "player2" : "player1";
+      }
+
+      // Reset turn state
       state.dice = createInitialDice();
       state.bank = 0;
       state.turnTotal = 0;
       state.currentRollScore = 0;
       state.currentRollScoringDice = [];
       state.currentRollDieScores = {};
+      state.currentRollCombos = [];
       state.heldDiceThisTurn = [];
       state.smoked = false;
-
-      // Switch player
-      state.activePlayer = current === "player1" ? "player2" : "player1";
     },
 
     endTurnNoScore(state) {
+      // Reset dice
       state.dice = createInitialDice();
 
+      // Lose all turn points
       state.bank = 0;
       state.turnTotal = 0;
+
+      // Clear current roll data
       state.currentRollScore = 0;
       state.currentRollScoringDice = [];
       state.currentRollDieScores = {};
+      state.currentRollCombos = [];
+
+      // Clear held dice
       state.heldDiceThisTurn = [];
 
+      // Remove smoked overlay
       state.smoked = false;
-      
-      state.activePlayer = 
-        state.activePlayer === "player1" ? "player2" : "player1";
 
-      console.log("ERROR smoked:", smoked)
-
+      // Switch player
+      state.activePlayer =
+        state.activePlayer === "player1"
+          ? "player2"
+          : "player1";
     },
 
     /* ---------------- SMOKED OVERLAY ---------------- */

@@ -1,12 +1,45 @@
 export default function calculateScore(values) {
   const counts = {};
-  values.forEach(v => (counts[v] = (counts[v] || 0) + 1));
+
+  values.forEach(v => {
+    counts[v] = (counts[v] || 0) + 1;
+  });
 
   const scoringDice = [];
   const dieScores = {};
   const combos = [];
+
   let score = 0;
-  let autoWin = false; // new flag for 6 ones
+  let autoWin = false;
+
+  // ---------- THREE PAIRS ----------
+  const pairs = Object.values(counts).filter(c => c === 2).length;
+
+  if (pairs === 3) {
+    return {
+      score: 750,
+
+      scoringDice: values.map((_, i) => i),
+
+      // no individual die values
+      dieScores: Object.fromEntries(
+        values.map((_, i) => [i, 0])
+      ),
+
+      combos: [
+        {
+          type: "three-pairs",
+          diceIndexes: values.map((_, i) => i),
+          score: 750,
+          heldCount: 0,
+          fullyHeld: false,
+          conditional: true,
+        }
+      ],
+
+      autoWin: false,
+    };
+  }
 
   // ---------- 3–6 OF A KIND ----------
   Object.entries(counts).forEach(([numStr, count]) => {
@@ -14,6 +47,7 @@ export default function calculateScore(values) {
 
     if (count >= 3) {
       const indexes = [];
+
       values.forEach((v, i) => {
         if (v === num && indexes.length < count) {
           indexes.push(i);
@@ -21,46 +55,59 @@ export default function calculateScore(values) {
         }
       });
 
-      let comboScore;
+      let comboScore = 0;
       let conditional = false;
 
+      // ---------- ONES ----------
       if (num === 1) {
         switch (count) {
           case 3:
             comboScore = 1000;
             break;
+
           case 4:
             comboScore = 2000;
             break;
+
           case 5:
             comboScore = 4000;
             break;
+
           case 6:
-            comboScore = 0; // points irrelevant; trigger auto-win elsewhere
+            comboScore = 0;
             autoWin = true;
             break;
         }
-      } else {
-        // 3–6 of other numbers
+      }
+
+      // ---------- OTHER NUMBERS ----------
+      else {
         switch (count) {
           case 3:
             comboScore = 100 * num;
             break;
+
           case 4:
             comboScore = 2 * 100 * num;
             break;
+
           case 5:
             comboScore = 4 * 100 * num;
             break;
+
           case 6:
             comboScore = 8 * 100 * num;
             break;
         }
-        conditional = true; // only score when all held
+
+        // must hold entire combo
+        conditional = true;
       }
 
       indexes.forEach(i => {
-        dieScores[i] = conditional ? 0 : comboScore / count;
+        dieScores[i] = conditional
+          ? 0
+          : comboScore / count;
       });
 
       combos.push({
@@ -70,33 +117,18 @@ export default function calculateScore(values) {
         fullyHeld: false,
         conditional,
       });
-
-      const Counts = {};
-      values.forEach(v => counts[v] = (counts[v] || 0) + 1);
-
-      const pairs = Object.values(counts).filter(c => c === 2).length;
-
-      if (pairs === 3) {
-        return {
-          score: 750,
-          scoringDice: values.map((_, i) => i),
-          dieScores: Object.fromEntries(values.map((_, i) => [i,0])),
-          combos: [{
-            type: "three-pairs",
-            diceIndexes: values.map((_, i) => i)
-          }]
-        }
-      }
     }
   });
 
-  // ---------- SINGLES (1s and 5s) ----------
+  // ---------- SINGLE 1s and 5s ----------
   values.forEach((v, i) => {
     if (scoringDice.includes(i)) return;
 
     if (v === 1 || v === 5) {
       const val = v === 1 ? 100 : 50;
+
       scoringDice.push(i);
+
       dieScores[i] = val;
 
       combos.push({
@@ -109,7 +141,14 @@ export default function calculateScore(values) {
     }
   });
 
-  score = Object.values(dieScores).reduce((a, b) => a + b, 0);
+  score = Object.values(dieScores)
+    .reduce((a, b) => a + b, 0);
 
-  return { score, scoringDice, dieScores, combos, autoWin };
+  return {
+    score,
+    scoringDice,
+    dieScores,
+    combos,
+    autoWin,
+  };
 }
